@@ -37,6 +37,8 @@ const obtenerTorneo = async (req, res) => {
   try {
     const { id } = req.params;
     const usuarioId = req.usuario.id;
+    
+    console.log('🔍 Backend - Obteniendo torneo ID:', id, 'para usuario:', usuarioId);
 
     const torneo = await Torneo.findOne({
       where: { id, usuarioId },
@@ -67,12 +69,15 @@ const obtenerTorneo = async (req, res) => {
     });
 
     if (!torneo) {
+      console.log('❌ Backend - Torneo no encontrado');
       return res.status(404).json({
         error: '❌ Torneo no encontrado',
         message: 'El torneo especificado no existe o no pertenece al usuario'
       });
     }
 
+    console.log('✅ Backend - Torneo encontrado:', torneo.id, torneo.nombre);
+    console.log('📊 Backend - Estructura del torneo:', JSON.stringify(torneo, null, 2));
     res.json({
       message: '✅ Torneo obtenido exitosamente',
       torneo
@@ -89,14 +94,22 @@ const obtenerTorneo = async (req, res) => {
 // Crear nuevo torneo
 const crearTorneo = async (req, res) => {
   try {
-    const { nombre, tipo, equiposIds } = req.body;
+    const { nombre, tipo, equiposIds, equiposNuevos } = req.body;
     const usuarioId = req.usuario.id;
 
     // Validar campos requeridos
-    if (!nombre || !tipo || !equiposIds || !Array.isArray(equiposIds)) {
+    if (!nombre || !tipo) {
       return res.status(400).json({
         error: '❌ Campos requeridos',
-        message: 'Nombre, tipo y lista de equipos son obligatorios'
+        message: 'Nombre y tipo son obligatorios'
+      });
+    }
+
+    // Validar que se proporcionen equipos (existentes o nuevos)
+    if ((!equiposIds || equiposIds.length === 0) && (!equiposNuevos || equiposNuevos.length === 0)) {
+      return res.status(400).json({
+        error: '❌ Equipos requeridos',
+        message: 'Debe proporcionar al menos un equipo (existente o nuevo)'
       });
     }
 
@@ -108,8 +121,52 @@ const crearTorneo = async (req, res) => {
       });
     }
 
+    // Preparar lista final de equipos
+    let equiposFinales = [];
+
+    // Agregar equipos existentes si se proporcionan
+    if (equiposIds && Array.isArray(equiposIds) && equiposIds.length > 0) {
+      const equiposExistentes = await Equipo.findAll({
+        where: {
+          id: { [Op.in]: equiposIds },
+          usuarioId
+        }
+      });
+
+      if (equiposExistentes.length !== equiposIds.length) {
+        return res.status(400).json({
+          error: '❌ Equipos inválidos',
+          message: 'Algunos equipos no existen o no pertenecen al usuario'
+        });
+      }
+      equiposFinales = equiposExistentes;
+    }
+
+               // Crear equipos nuevos si se proporcionan
+           if (equiposNuevos && Array.isArray(equiposNuevos) && equiposNuevos.length > 0) {
+             for (const nombreEquipo of equiposNuevos) {
+               if (nombreEquipo && nombreEquipo.trim()) {
+                 try {
+                   const nuevoEquipo = await Equipo.create({
+                     nombre: nombreEquipo.trim(),
+                     usuarioId
+                   });
+                   equiposFinales.push(nuevoEquipo);
+                 } catch (error) {
+                   if (error.name === 'SequelizeValidationError') {
+                     return res.status(400).json({
+                       error: '❌ Nombre de equipo inválido',
+                       message: `El equipo "${nombreEquipo}" no es válido: ${error.errors[0].message}`
+                     });
+                   }
+                   throw error;
+                 }
+               }
+             }
+           }
+
     // Validar número mínimo de equipos
-    if (equiposIds.length < 2) {
+    if (equiposFinales.length < 2) {
       return res.status(400).json({
         error: '❌ Equipos insuficientes',
         message: 'Se requieren al menos 2 equipos para crear un torneo'
@@ -118,28 +175,13 @@ const crearTorneo = async (req, res) => {
 
     // Para eliminación directa, verificar que sea potencia de 2
     if (tipo === 'eliminacion') {
-      const esPotenciaDe2 = (equiposIds.length & (equiposIds.length - 1)) === 0;
+      const esPotenciaDe2 = (equiposFinales.length & (equiposFinales.length - 1)) === 0;
       if (!esPotenciaDe2) {
         return res.status(400).json({
           error: '❌ Número de equipos inválido',
           message: 'Para eliminación directa, el número de equipos debe ser una potencia de 2 (2, 4, 8, 16, etc.)'
         });
       }
-    }
-
-    // Verificar que todos los equipos pertenezcan al usuario
-    const equipos = await Equipo.findAll({
-      where: {
-        id: { [Op.in]: equiposIds },
-        usuarioId
-      }
-    });
-
-    if (equipos.length !== equiposIds.length) {
-      return res.status(400).json({
-        error: '❌ Equipos inválidos',
-        message: 'Algunos equipos no existen o no pertenecen al usuario'
-      });
     }
 
     // Crear el torneo
@@ -150,11 +192,14 @@ const crearTorneo = async (req, res) => {
       usuarioId
     });
 
+    // Obtener IDs de los equipos finales
+    const equiposIdsFinales = equiposFinales.map(equipo => equipo.id);
+
     // Asignar equipos al torneo
-    await nuevoTorneo.addEquipos(equiposIds);
+    await nuevoTorneo.addEquipos(equiposIdsFinales);
 
     // Generar fixture
-    await generarFixture(nuevoTorneo.id, equiposIds, tipo);
+    await generarFixture(nuevoTorneo.id, equiposIdsFinales, tipo);
 
     // Obtener el torneo con equipos
     const torneoCompleto = await Torneo.findByPk(nuevoTorneo.id, {

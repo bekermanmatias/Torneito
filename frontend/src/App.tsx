@@ -4,6 +4,10 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
 import LoginForm from './components/LoginForm';
 import Dashboard from './pages/Dashboard';
+import Equipos from './pages/Equipos';
+import Torneos from './pages/Torneos';
+import CrearTorneo from './pages/CrearTorneo';
+import DetalleTorneo from './pages/DetalleTorneo';
 
 // Componente para rutas protegidas
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -54,9 +58,51 @@ const AppContent: React.FC = () => {
           }
         />
         
-        {/* Rutas temporales - redirigir al dashboard */}
-        <Route path="/equipos" element={<Navigate to="/" replace />} />
-        <Route path="/torneos" element={<Navigate to="/" replace />} />
+        {/* Rutas de equipos y torneos */}
+        <Route
+          path="/equipos"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Equipos />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/torneos"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Torneos />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/crear-torneo"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <CrearTorneo />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/torneo/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <DetalleTorneo />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* Ruta temporal - redirigir al dashboard */}
         <Route path="/partidos" element={<Navigate to="/" replace />} />
         
         {/* Ruta por defecto */}

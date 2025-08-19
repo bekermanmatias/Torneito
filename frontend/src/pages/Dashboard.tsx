@@ -2,50 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Trophy, 
-  Users, 
-  Calendar, 
-  TrendingUp, 
-  Plus,
   ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { equipoService, torneoService, partidoService } from '../services/api';
-import type { Equipo, Torneo, Partido } from '../types';
+import { torneoService } from '../services/api';
+import type { Torneo } from '../types';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    equipos: 0,
-    torneos: 0,
-    partidos: 0,
-    partidosJugados: 0,
-  });
   const [recentTorneos, setRecentTorneos] = useState<Torneo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [equiposRes, torneosRes, partidosRes] = await Promise.all([
-          equipoService.getAll(),
-          torneoService.getAll(),
-          partidoService.getByTorneo(1), // Temporal, necesitaremos ajustar esto
-        ]);
-
-        const equipos = equiposRes.data;
-        const torneos = torneosRes.data;
-        const partidos = partidosRes.data || [];
-
-        setStats({
-          equipos: equipos.length,
-          torneos: torneos.length,
-          partidos: partidos.length,
-          partidosJugados: partidos.filter((p: Partido) => p.estado === 'jugado').length,
-        });
-
-        setRecentTorneos(torneos.slice(0, 3));
+        const torneosRes = await torneoService.getAll();
+        const torneos = Array.isArray(torneosRes.data) ? torneosRes.data : [];
+        setRecentTorneos(torneos.slice(0, 5)); // Mostrar los 5 más recientes
       } catch (error) {
-        console.error('Error loading dashboard data:', error);
+        console.error('Error loading tournaments:', error);
+        setRecentTorneos([]);
       } finally {
         setLoading(false);
       }
@@ -100,133 +76,53 @@ const Dashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Equipos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.equipos}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-success-100 rounded-lg flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-success-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Torneos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.torneos}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-warning-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-warning-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Partidos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.partidos}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-danger-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-danger-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Jugados</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.partidosJugados}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* Botones de Crear Torneo */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         <Link
-          to="/equipos"
-          className="card hover:shadow-md transition-shadow duration-200 cursor-pointer group"
+          to="/crear-torneo?tipo=eliminacion"
+          className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-red-500 to-red-600 p-8 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900">Gestionar Equipos</h3>
-                <p className="text-sm text-gray-600">Crear y administrar equipos</p>
-              </div>
+          <div className="relative z-10">
+            <div className="mb-4 flex items-center justify-center w-16 h-16 bg-white/20 rounded-full">
+              <Trophy className="w-8 h-8" />
             </div>
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
+            <h3 className="text-2xl font-bold mb-2">Eliminación Directa</h3>
+            <p className="text-red-100 mb-4">
+              Crea un torneo de eliminación directa donde los equipos compiten en rondas hasta llegar al campeón.
+            </p>
+            <div className="flex items-center text-red-100 group-hover:text-white transition-colors">
+              <span className="font-medium">Crear Torneo</span>
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            </div>
           </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </Link>
 
         <Link
-          to="/torneos"
-          className="card hover:shadow-md transition-shadow duration-200 cursor-pointer group"
+          to="/crear-torneo?tipo=liga"
+          className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-8 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-success-100 rounded-lg flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-success-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900">Crear Torneo</h3>
-                <p className="text-sm text-gray-600">Organizar nuevos torneos</p>
-              </div>
+          <div className="relative z-10">
+            <div className="mb-4 flex items-center justify-center w-16 h-16 bg-white/20 rounded-full">
+              <Trophy className="w-8 h-8" />
             </div>
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-success-600 transition-colors" />
-          </div>
-        </Link>
-
-        <Link
-          to="/partidos"
-          className="card hover:shadow-md transition-shadow duration-200 cursor-pointer group"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-warning-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-warning-600" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-semibold text-gray-900">Ver Partidos</h3>
-                <p className="text-sm text-gray-600">Gestionar resultados</p>
-              </div>
+            <h3 className="text-2xl font-bold mb-2">Liga</h3>
+            <p className="text-blue-100 mb-4">
+              Crea un torneo de liga donde todos los equipos juegan entre sí y se determina el campeón por puntos.
+            </p>
+            <div className="flex items-center text-blue-100 group-hover:text-white transition-colors">
+              <span className="font-medium">Crear Torneo</span>
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </div>
-            <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-warning-600 transition-colors" />
           </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </Link>
       </div>
 
-      {/* Recent Tournaments */}
+      {/* Historial de Torneos */}
       <div className="card">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Torneos Recientes</h2>
-          <Link
-            to="/torneos"
-            className="btn btn-primary"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Torneo
-          </Link>
+          <h2 className="text-xl font-semibold text-gray-900">Historial de Torneos</h2>
         </div>
 
         {recentTorneos.length === 0 ? (
@@ -234,24 +130,15 @@ const Dashboard: React.FC = () => {
             <Trophy className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No hay torneos</h3>
             <p className="mt-1 text-sm text-gray-500">
-              Comienza creando tu primer torneo.
+              Comienza creando tu primer torneo usando los botones de arriba.
             </p>
-            <div className="mt-6">
-              <Link
-                to="/torneos"
-                className="btn btn-primary"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Crear Torneo
-              </Link>
-            </div>
           </div>
         ) : (
           <div className="space-y-4">
             {recentTorneos.map((torneo) => (
               <div
                 key={torneo.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center">
                   <Trophy className="w-5 h-5 text-primary-600 mr-3" />
@@ -269,7 +156,7 @@ const Dashboard: React.FC = () => {
                     {getTorneoStatusText(torneo.estado)}
                   </span>
                   <Link
-                    to={`/torneos/${torneo.id}`}
+                    to={`/torneo/${torneo.id}`}
                     className="text-primary-600 hover:text-primary-700 text-sm font-medium"
                   >
                     Ver detalles

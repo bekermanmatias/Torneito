@@ -56,7 +56,8 @@ export interface Torneo {
 export interface CreateTorneoData {
   nombre: string;
   tipo: TorneoTipo;
-  equiposIds: number[];
+  equiposIds?: number[];
+  equiposNuevos?: string[];
 }
 
 export interface UpdateTorneoData {

@@ -33,6 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem('auth_token');
+      
       if (token) {
         try {
           const response = await authService.getProfile();
@@ -51,11 +52,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       const response = await authService.login({ email, password });
+      
       const { token, user: userData } = response.data;
       
       localStorage.setItem('auth_token', token);
       setUser(userData);
     } catch (error: any) {
+      console.error('Error en login:', error);
       throw new Error(error.response?.data?.message || 'Error al iniciar sesión');
     }
   };

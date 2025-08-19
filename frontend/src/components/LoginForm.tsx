@@ -38,8 +38,11 @@ const LoginForm: React.FC = () => {
       } else {
         await register(formData.nombre, formData.email, formData.password);
       }
-      navigate('/');
+      
+      // Usar window.location.href para forzar la navegación completa
+      window.location.href = '/';
     } catch (error: any) {
+      console.error('❌ Error en handleSubmit:', error);
       setError(error.message);
     } finally {
       setLoading(false);

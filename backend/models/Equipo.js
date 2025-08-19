@@ -11,7 +11,13 @@ const Equipo = sequelize.define('Equipo', {
     type: DataTypes.STRING(100),
     allowNull: false,
     validate: {
-      len: [2, 100]
+      len: {
+        args: [2, 100],
+        msg: 'El nombre del equipo debe tener entre 2 y 100 caracteres'
+      },
+      notEmpty: {
+        msg: 'El nombre del equipo no puede estar vacío'
+      }
     }
   },
   escudo_url: {
