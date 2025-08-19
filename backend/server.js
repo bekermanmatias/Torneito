@@ -27,11 +27,11 @@ app.get('/', (req, res) => {
   });
 });
 
-// Rutas de la API (las crearemos después)
-// app.use('/api/usuarios', require('./routes/usuarios'));
-// app.use('/api/equipos', require('./routes/equipos'));
-// app.use('/api/torneos', require('./routes/torneos'));
-// app.use('/api/partidos', require('./routes/partidos'));
+// Rutas de la API
+app.use('/api/usuarios', require('./routes/usuarios'));
+app.use('/api/equipos', require('./routes/equipos'));
+app.use('/api/torneos', require('./routes/torneos'));
+app.use('/api/partidos', require('./routes/partidos'));
 
 // Middleware de manejo de errores
 app.use((err, req, res, next) => {
@@ -43,7 +43,7 @@ app.use((err, req, res, next) => {
 });
 
 // Ruta para manejar rutas no encontradas
-app.use('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     error: '❌ Ruta no encontrada',
     message: `La ruta ${req.originalUrl} no existe`

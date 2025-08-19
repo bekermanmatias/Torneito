@@ -1,0 +1,668 @@
+{
+	"info": {
+		"_postman_id": "torneito-api-collection",
+		"name": "🏆 Torneito API",
+		"description": "Colección completa para probar la API de gestión de torneos de fútbol",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "👤 Usuarios",
+			"item": [
+				{
+					"name": "Registrar Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@ejemplo.com\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Login Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"juan@ejemplo.com\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener Perfil",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"profile"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar Perfil",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Juan Carlos Pérez\",\n  \"email\": \"juancarlos@ejemplo.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"profile"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "⚽ Equipos",
+			"item": [
+				{
+					"name": "Obtener Equipos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/equipos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"equipos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear Equipo",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Real Madrid\",\n  \"escudo_url\": \"https://ejemplo.com/real-madrid.png\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/equipos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"equipos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Equipos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/equipos/search?q=Madrid",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"equipos",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "Madrid"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener Equipo por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/equipos/{{equipo_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"equipos",
+								"{{equipo_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar Equipo",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Real Madrid CF\",\n  \"escudo_url\": \"https://ejemplo.com/real-madrid-cf.png\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/equipos/{{equipo_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"equipos",
+								"{{equipo_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar Equipo",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/equipos/{{equipo_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"equipos",
+								"{{equipo_id}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🏆 Torneos",
+			"item": [
+				{
+					"name": "Obtener Torneos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/torneos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"torneos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear Torneo Liga",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Liga Española 2024\",\n  \"tipo\": \"liga\",\n  \"equiposIds\": [1, 2, 3, 4]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/torneos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"torneos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear Torneo Eliminación",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Copa Libertadores 2024\",\n  \"tipo\": \"eliminacion\",\n  \"equiposIds\": [1, 2, 3, 4]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/torneos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"torneos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener Torneo por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/torneos/{{torneo_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"torneos",
+								"{{torneo_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Tabla de Posiciones",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/torneos/{{torneo_id}}/tabla-posiciones",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"torneos",
+								"{{torneo_id}}",
+								"tabla-posiciones"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar Torneo",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Liga Española 2024 - Actualizada\",\n  \"estado\": \"en_curso\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/torneos/{{torneo_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"torneos",
+								"{{torneo_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar Torneo",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/torneos/{{torneo_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"torneos",
+								"{{torneo_id}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "⚽ Partidos",
+			"item": [
+				{
+					"name": "Obtener Partidos de Torneo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/partidos/torneo/{{torneo_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"partidos",
+								"torneo",
+								"{{torneo_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener Partido por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/partidos/{{partido_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"partidos",
+								"{{partido_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Registrar Resultado",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"golesLocal\": 2,\n  \"golesVisitante\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/partidos/{{partido_id}}/resultado",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"partidos",
+								"{{partido_id}}",
+								"resultado"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar Resultado",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"golesLocal\": 3,\n  \"golesVisitante\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/partidos/{{partido_id}}/actualizar-resultado",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"partidos",
+								"{{partido_id}}",
+								"actualizar-resultado"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar Resultado",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/partidos/{{partido_id}}/resultado",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"partidos",
+								"{{partido_id}}",
+								"resultado"
+							]
+						}
+					}
+				},
+				{
+					"name": "Estadísticas de Equipo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/partidos/torneo/{{torneo_id}}/equipo/{{equipo_id}}/estadisticas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"partidos",
+								"torneo",
+								"{{torneo_id}}",
+								"equipo",
+								"{{equipo_id}}",
+								"estadisticas"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3001",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "equipo_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "torneo_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "partido_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
