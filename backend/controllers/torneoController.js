@@ -391,6 +391,8 @@ const generarFixtureEliminacion = async (torneoId, equiposIds) => {
 
   // Crear partidos de la primera ronda
   await Partido.bulkCreate(partidos);
+  
+  console.log(`✅ Generada primera ronda con ${partidos.length} partidos para torneo ${torneoId}`);
 };
 
 // Obtener tabla de posiciones (solo para ligas)

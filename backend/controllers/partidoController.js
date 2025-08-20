@@ -68,6 +68,7 @@ const obtenerPartido = async (req, res) => {
       include: [
         {
           model: Torneo,
+          as: 'torneo',
           where: { usuarioId },
           attributes: ['id', 'nombre', 'tipo', 'estado']
         },
@@ -133,6 +134,7 @@ const registrarResultado = async (req, res) => {
       include: [
         {
           model: Torneo,
+          as: 'torneo',
           where: { usuarioId },
           attributes: ['id', 'nombre', 'tipo', 'estado']
         }
@@ -160,6 +162,11 @@ const registrarResultado = async (req, res) => {
       golesVisitante,
       estado: 'jugado'
     });
+
+    // Si es un torneo de eliminación, verificar si necesitamos generar la siguiente ronda
+    if (partido.torneo.tipo === 'eliminacion') {
+      await generarSiguienteRonda(partido.torneoId, partido.ronda);
+    }
 
     // Obtener el partido actualizado con equipos
     const partidoActualizado = await Partido.findByPk(id, {
@@ -219,6 +226,7 @@ const actualizarResultado = async (req, res) => {
       include: [
         {
           model: Torneo,
+          as: 'torneo',
           where: { usuarioId },
           attributes: ['id', 'nombre', 'tipo', 'estado']
         }
@@ -287,6 +295,7 @@ const eliminarResultado = async (req, res) => {
       include: [
         {
           model: Torneo,
+          as: 'torneo',
           where: { usuarioId },
           attributes: ['id', 'nombre', 'tipo', 'estado']
         }
@@ -459,6 +468,90 @@ const obtenerEstadisticasEquipo = async (req, res) => {
       error: '❌ Error interno del servidor',
       message: 'Error al obtener las estadísticas'
     });
+  }
+};
+
+// Función para generar la siguiente ronda en torneos de eliminación
+const generarSiguienteRonda = async (torneoId, rondaActual) => {
+  try {
+    // Verificar si todos los partidos de la ronda actual están completados
+    const partidosRondaActual = await Partido.findAll({
+      where: {
+        torneoId,
+        ronda: rondaActual
+      }
+    });
+
+    const partidosCompletados = partidosRondaActual.filter(p => p.estado === 'jugado');
+    
+    // Si no todos los partidos están completados, no generar siguiente ronda
+    if (partidosCompletados.length !== partidosRondaActual.length) {
+      return;
+    }
+
+    // Verificar si ya existe la siguiente ronda
+    const siguienteRonda = rondaActual + 1;
+    const partidosSiguienteRonda = await Partido.findAll({
+      where: {
+        torneoId,
+        ronda: siguienteRonda
+      }
+    });
+
+    if (partidosSiguienteRonda.length > 0) {
+      return; // Ya existe la siguiente ronda
+    }
+
+    // Obtener los ganadores de la ronda actual
+    const ganadores = [];
+    for (const partido of partidosCompletados) {
+      if (partido.golesLocal > partido.golesVisitante) {
+        ganadores.push(partido.equipoLocalId);
+      } else if (partido.golesVisitante > partido.golesLocal) {
+        ganadores.push(partido.equipoVisitanteId);
+      }
+      // En caso de empate, no avanzar ningún equipo (esto se puede modificar según las reglas)
+    }
+
+    // Si solo queda un ganador, es la final
+    if (ganadores.length === 1) {
+      // El torneo ha terminado
+      await Torneo.update(
+        { estado: 'finalizado' },
+        { where: { id: torneoId } }
+      );
+      return;
+    }
+
+    // Generar partidos para la siguiente ronda
+    const partidosNuevaRonda = [];
+    const fechaBase = new Date();
+    let fechaPartido = new Date(fechaBase);
+
+    for (let i = 0; i < ganadores.length; i += 2) {
+      if (i + 1 < ganadores.length) {
+        partidosNuevaRonda.push({
+          torneoId,
+          equipoLocalId: ganadores[i],
+          equipoVisitanteId: ganadores[i + 1],
+          fecha: new Date(fechaPartido),
+          estado: 'pendiente',
+          ronda: siguienteRonda
+        });
+
+        fechaPartido.setDate(fechaPartido.getDate() + 2);
+      }
+    }
+
+    // Crear los partidos de la nueva ronda
+    if (partidosNuevaRonda.length > 0) {
+      await Partido.bulkCreate(partidosNuevaRonda);
+      console.log(`✅ Generada ronda ${siguienteRonda} con ${partidosNuevaRonda.length} partidos`);
+    }
+
+  } catch (error) {
+    console.error('Error al generar siguiente ronda:', error);
+    throw error;
   }
 };
 

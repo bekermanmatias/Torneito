@@ -76,18 +76,29 @@ const DetalleTorneo: React.FC = () => {
     return tipo === 'eliminacion' ? 'text-red-600 bg-red-100' : 'text-blue-600 bg-blue-100';
   };
 
-  const handleUpdateResult = async (partidoId: number, golesLocal: number, golesVisitante: number) => {
+  const handleUpdateResult = async (partidoId: number, golesLocal: number, golesVisitante: number, isEditing: boolean = false) => {
     try {
       setUpdatingResult(true);
       
-      // Actualizar el resultado en el backend
-      await partidoService.registerResult(partidoId, { golesLocal, golesVisitante });
+      console.log('🔄 Actualizando resultado:', { partidoId, golesLocal, golesVisitante, isEditing });
       
-      // Recargar los datos del torneo para obtener la información actualizada
-      await loadTorneo();
+      // Si estamos editando un partido ya jugado, usar actualizarResultado
+      if (isEditing) {
+        await partidoService.updateResult(partidoId, { golesLocal, golesVisitante });
+      } else {
+        // Si es un partido nuevo, usar registerResult
+        await partidoService.registerResult(partidoId, { golesLocal, golesVisitante });
+      }
+      
+      console.log('✅ Resultado actualizado exitosamente');
+      
+      // No recargar los datos para evitar parpadeo
+      // Los datos se actualizarán localmente en el componente CuadroEliminacion
+      
+      console.log('✅ Operación completada sin recarga');
       
     } catch (error: any) {
-      console.error('Error al actualizar resultado:', error);
+      console.error('❌ Error al actualizar resultado:', error);
       throw error;
     } finally {
       setUpdatingResult(false);
@@ -208,6 +219,7 @@ const DetalleTorneo: React.FC = () => {
             partidos={partidos} 
             equipos={torneo.equipos || []} 
             onUpdateResult={handleUpdateResult}
+            disableReload={true}
           />
         </div>
       )}
