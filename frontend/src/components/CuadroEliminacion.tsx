@@ -21,6 +21,7 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
   const [editGolesVisitante, setEditGolesVisitante] = useState<number>(0);
   const [saving, setSaving] = useState(false);
   const [localPartidos, setLocalPartidos] = useState<Partido[]>(partidos);
+  const [hoveredEquipo, setHoveredEquipo] = useState<{partidoId: number, equipoNombre: string} | null>(null);
   
   // Actualizar partidos locales cuando cambien los props (solo si no está deshabilitado el reload)
   useEffect(() => {
@@ -28,6 +29,8 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
       setLocalPartidos(partidos);
     }
   }, [partidos, disableReload]);
+
+
 
   // Calcular el número total de rondas basado en la cantidad de equipos
   const totalEquipos = equipos.length;
@@ -129,6 +132,72 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     return null; // Empate
   };
 
+  // Función para calcular el camino del equipo por nombre (hacia adelante y hacia atrás)
+  const getCaminoEquipo = (partidoId: number, nombreEquipoEspecifico?: string): number[] => {
+    const partido = localPartidos.find(p => p.id === partidoId);
+    if (!partido) {
+      return [partidoId];
+    }
+    
+    // Usar el nombre específico si se proporciona, sino usar el equipo local como prioridad
+    const nombreEquipo = nombreEquipoEspecifico || partido.equipoLocal?.nombre || partido.equipoVisitante?.nombre;
+    if (!nombreEquipo) return [partidoId];
+    
+    const camino: number[] = [];
+    
+    // 1. Buscar hacia atrás: encontrar todos los partidos anteriores donde participó este equipo
+    const buscarHaciaAtras = (nombreEquipo: string, rondaActual: number): number[] => {
+      const partidosAnteriores: number[] = [];
+      
+      for (let ronda = rondaActual - 1; ronda >= 1; ronda--) {
+        const partidosRonda = localPartidos.filter(p => p.ronda === ronda);
+        
+        for (const partidoAnterior of partidosRonda) {
+          if (partidoAnterior.equipoLocal?.nombre === nombreEquipo || 
+              partidoAnterior.equipoVisitante?.nombre === nombreEquipo) {
+            partidosAnteriores.unshift(partidoAnterior.id);
+            // Buscar recursivamente hacia atrás desde este partido
+            const caminoAnterior = buscarHaciaAtras(nombreEquipo, ronda);
+            partidosAnteriores.unshift(...caminoAnterior);
+            break;
+          }
+        }
+      }
+      
+      return partidosAnteriores;
+    };
+    
+    // 2. Buscar hacia adelante: encontrar todos los partidos siguientes donde participa este equipo
+    const buscarHaciaAdelante = (nombreEquipo: string, rondaActual: number): number[] => {
+      const partidosSiguientes: number[] = [];
+      
+      for (let ronda = rondaActual + 1; ronda <= totalRondas; ronda++) {
+        const partidosRonda = localPartidos.filter(p => p.ronda === ronda);
+        
+        for (const partidoSiguiente of partidosRonda) {
+          if (partidoSiguiente.equipoLocal?.nombre === nombreEquipo || 
+              partidoSiguiente.equipoVisitante?.nombre === nombreEquipo) {
+            partidosSiguientes.push(partidoSiguiente.id);
+            // Buscar recursivamente hacia adelante desde este partido
+            const caminoSiguiente = buscarHaciaAdelante(nombreEquipo, ronda);
+            partidosSiguientes.push(...caminoSiguiente);
+            break;
+          }
+        }
+      }
+      
+      return partidosSiguientes;
+    };
+    
+    // 3. Construir el camino completo
+    const partidosAnteriores = buscarHaciaAtras(nombreEquipo, partido.ronda || 1);
+    const partidosSiguientes = buscarHaciaAdelante(nombreEquipo, partido.ronda || 1);
+    
+    camino.push(...partidosAnteriores, partidoId, ...partidosSiguientes);
+    
+    return camino;
+  };
+
   const handleEdit = (partido: Partido) => {
     // No permitir editar partidos vacíos
     if (partido.id < 0) {
@@ -199,7 +268,7 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     }
   };
 
-  const renderPartido = (partido: Partido, numeroGlobal: number) => {
+  const renderPartido = (partido: Partido, numeroGlobal: number, rondaIndex: number) => {
     const ganador = getGanador(partido);
     const perdedor = getPerdedor(partido);
     const jugado = partido.estado === 'jugado';
@@ -207,8 +276,16 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     // Un partido está vacío si tiene ID negativo O si no tiene equipos asignados
     const esPartidoVacio = partido.id < 0 || !partido.equipoLocal || !partido.equipoVisitante;
     
-    return (
-      <div key={partido.id} className="relative">
+    // Calcular si este partido está en el camino del equipo hovered
+    const caminoEquipo = hoveredEquipo ? getCaminoEquipo(hoveredEquipo.partidoId, hoveredEquipo.equipoNombre) : [];
+    const estaEnCamino = caminoEquipo.includes(partido.id);
+    const esPartidoHovered = hoveredEquipo?.partidoId === partido.id;
+    
+          return (
+        <div 
+          key={partido.id} 
+          className="relative"
+        >
         {/* Título del partido con botón */}
         <div className="flex items-center justify-between mb-2">
           <div className="text-sm font-medium text-gray-700">
@@ -223,11 +300,11 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
                   <button
                     onClick={() => handleSave(partido.id)}
                     disabled={saving}
-                    className="w-6 h-6 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center"
+                    className="w-5 h-5 text-green-600 hover:text-green-700 disabled:opacity-50 flex items-center justify-center transition-colors"
                     title={saving ? 'Guardando...' : 'Guardar'}
                   >
                     {saving ? (
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <Save className="w-3 h-3" />
                     )}
@@ -235,7 +312,7 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
                   <button
                     onClick={handleCancel}
                     disabled={saving}
-                    className="w-6 h-6 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 flex items-center justify-center"
+                    className="w-5 h-5 text-gray-400 hover:text-gray-600 disabled:opacity-50 flex items-center justify-center transition-colors"
                     title="Cancelar"
                   >
                     <X className="w-3 h-3" />
@@ -244,7 +321,7 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
               ) : (
                 <button
                   onClick={() => handleEdit(partido)}
-                  className="w-6 h-6 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center justify-center"
+                  className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center"
                   title={jugado ? 'Editar' : 'Registrar'}
                 >
                   <Edit2 className="w-3 h-3" />
@@ -255,10 +332,19 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
         </div>
         
         {/* Tarjeta del partido */}
-        <div className="bg-gray-100 border border-gray-200 rounded-lg w-64">
+        <div className={`border rounded-lg w-full min-w-[220px] transition-all duration-200 ${
+          esPartidoVacio ? 'bg-gray-50 border-gray-200' : 
+          esPartidoHovered ? 'bg-blue-50 border-blue-300 shadow-md' :
+          estaEnCamino ? 'bg-green-50 border-green-300 shadow-sm' :
+          'bg-white border-gray-200'
+        }`}>
           {/* Equipo Local */}
           <div className="flex items-center justify-between p-3 border-b border-gray-200">
-            <span className="text-sm text-gray-700 truncate flex-1">
+            <span 
+              className="text-sm text-gray-700 truncate flex-1 cursor-pointer hover:text-blue-600 transition-colors"
+              onMouseEnter={() => setHoveredEquipo({partidoId: partido.id, equipoNombre: partido.equipoLocal?.nombre || ''})}
+              onMouseLeave={() => setHoveredEquipo(null)}
+            >
               {esPartidoVacio ? 'TBD' : partido.equipoLocal?.nombre || 'TBD'}
             </span>
             <div className="flex items-center space-x-2">
@@ -298,7 +384,11 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
           
           {/* Equipo Visitante */}
           <div className="flex items-center justify-between p-3">
-            <span className="text-sm text-gray-700 truncate flex-1">
+            <span 
+              className="text-sm text-gray-700 truncate flex-1 cursor-pointer hover:text-blue-600 transition-colors"
+              onMouseEnter={() => setHoveredEquipo({partidoId: partido.id, equipoNombre: partido.equipoVisitante?.nombre || ''})}
+              onMouseLeave={() => setHoveredEquipo(null)}
+            >
               {esPartidoVacio ? 'TBD' : partido.equipoVisitante?.nombre || 'TBD'}
             </span>
             <div className="flex items-center space-x-2">
@@ -352,17 +442,22 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
   }
 
   return (
-    <div className="w-full overflow-x-auto bg-gray-50 p-8">
-      <div className="flex space-x-20 min-w-max relative">
+          <div className="w-full bg-gray-50 p-4">
+        <div className="flex flex-col space-y-8 max-w-7xl mx-auto">
         {rondas.map((ronda, rondaIndex) => (
-          <div key={ronda.numero} className="flex flex-col items-center">
+          <div key={ronda.numero} className="flex flex-col w-full">
             {/* Título de la ronda */}
-            <div className="mb-8 text-center">
-              <h3 className="text-lg font-medium text-gray-700">{ronda.titulo}</h3>
+            <div className="mb-4 text-center w-full">
+              <h3 className="text-lg font-medium text-gray-700">
+                {ronda.titulo}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {ronda.partidos.filter(p => p.estado === 'jugado').length} de {ronda.partidos.length} jugados
+              </p>
             </div>
             
             {/* Partidos de la ronda */}
-            <div className="relative flex flex-col">
+            <div className="relative flex flex-wrap justify-center gap-6 w-full max-w-7xl">
               {ronda.partidos.map((partido, partidoIndex) => {
                 // Calcular el número global del partido
                 let numeroGlobal = 1; // Empezar en 1
@@ -375,72 +470,18 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
                 // Sumar los partidos de la ronda actual hasta este índice
                 numeroGlobal += partidoIndex;
                 
-                // Calcular la posición vertical
-                let marginTop = '0px';
-                
-                if (rondaIndex === 0) {
-                  // Primera ronda: espaciado uniforme
-                  marginTop = partidoIndex === 0 ? '0px' : '30px';
-                } else {
-                  // Rondas siguientes: posicionar entre los partidos de la ronda anterior
-                  const partidosRondaAnterior = rondas[rondaIndex - 1].partidos.length;
-                  
-                  // Calcular qué partidos de la ronda anterior alimentan a este partido
-                  const partidoAnterior1 = partidoIndex * 2; // Primer partido de la ronda anterior
-                  const partidoAnterior2 = partidoIndex * 2 + 1; // Segundo partido de la ronda anterior
-                  
-                  // Posiciones de los partidos de la ronda anterior
-                  const posicionPartido1 = partidoAnterior1 * 70;
-                  const posicionPartido2 = partidoAnterior2 * 70;
-                  
-                  // Posición centrada entre los dos partidos
-                  const posicionCentrada = (posicionPartido1 + posicionPartido2) / 2;
-                  
-                  // Debug: mostrar información del partido 9
-                  if (numeroGlobal === 9) {
-                    console.log(`Partido 9 - Ronda: ${rondaIndex}, Índice: ${partidoIndex}`);
-                    console.log(`Partidos anteriores: ${partidoAnterior1} y ${partidoAnterior2}`);
-                    console.log(`Posiciones: ${posicionPartido1}px y ${posicionPartido2}px`);
-                    console.log(`Posición centrada: ${posicionCentrada}px`);
-                  }
-                  
-                  // Asegurar que los partidos de la segunda columna estén correctamente posicionados
-                  if (numeroGlobal === 9) {
-                    marginTop = '80px'; // Entre partido 1 (0px) y partido 2 (30px)
-                  } else if (numeroGlobal === 10) {
-                    marginTop = '190px'; // Entre partido 3 (60px) y partido 4 (90px)
-                  } else if (numeroGlobal === 11) {
-                    marginTop = '190px'; // Entre partido 5 (120px) y partido 6 (150px)
-                  } else if (numeroGlobal === 12) {
-                    marginTop = '190px'; // Entre partido 7 (180px) y partido 8 (210px)
-                  } else if (numeroGlobal === 13) {
-                    marginTop = '240px'; // Entre partido 9 (80px) y partido 10 (190px) = (80+190)/2
-                  } else if (numeroGlobal === 14) {
-                    marginTop = '500px'; // Entre partido 11 (190px) y partido 12 (190px) = 190px
-                  } else if (numeroGlobal === 15) {
-                    marginTop = '520px'; // Entre partido 13 (135px) y partido 14 (190px) = (135+190)/2
-                  } else {
-                    marginTop = `${posicionCentrada}px`;
-                  }
-                }
-                
                 return (
                   <div 
                     key={partido.id} 
                     className="relative"
-                    style={{ 
-                      marginTop: marginTop
-                    }}
                   >
-                    {renderPartido(partido, numeroGlobal - 1)} {/* Pasar el índice global */}
+                    {renderPartido(partido, numeroGlobal - 1, rondaIndex)} {/* Pasar el índice global y ronda */}
                   </div>
                 );
               })}
             </div>
           </div>
         ))}
-        
-
       </div>
     </div>
   );
