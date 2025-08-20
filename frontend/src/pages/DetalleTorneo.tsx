@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Trophy, 
-  ArrowLeft,
-  Play,
-  CheckCircle,
-  XCircle,
-  AlertCircle
-} from 'lucide-react';
+import { ArrowLeft, Trophy, XCircle, AlertCircle, Play, CheckCircle } from 'lucide-react';
 import { torneoService, partidoService } from '../services/api';
 import type { Torneo, Partido, Equipo } from '../types';
 import CuadroEliminacion from '../components/CuadroEliminacion';
@@ -150,25 +143,6 @@ const DetalleTorneo: React.FC = () => {
             </span>
           </div>
         </div>
-
-      {/* Equipos participantes */}
-      {torneo.equipos && torneo.equipos.length > 0 && (
-        <div className="card mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Equipos Participantes</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {torneo.equipos.map((equipo) => (
-              <div key={equipo.id} className="text-center p-3 bg-gray-50 rounded-lg">
-                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-primary-600 font-bold text-lg">
-                    {equipo.nombre.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <p className="text-sm font-medium text-gray-900 truncate">{equipo.nombre}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Cuadro de Eliminación */}
       {torneo.tipo === 'eliminacion' && (

@@ -2,8 +2,6 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Trophy, 
-  Users, 
-  Calendar, 
   Home, 
   LogOut, 
   User,
@@ -19,9 +17,7 @@ const Navigation: React.FC = () => {
 
   const navItems = [
     { label: 'Inicio', path: '/', icon: Home },
-    { label: 'Equipos', path: '/equipos', icon: Users },
     { label: 'Torneos', path: '/torneos', icon: Trophy },
-    { label: 'Partidos', path: '/partidos', icon: Calendar },
   ];
 
   const handleLogout = () => {

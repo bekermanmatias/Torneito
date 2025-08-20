@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
 import LoginForm from './components/LoginForm';
 import Dashboard from './pages/Dashboard';
-import Equipos from './pages/Equipos';
 import Torneos from './pages/Torneos';
 import CrearTorneo from './pages/CrearTorneo';
 import DetalleTorneo from './pages/DetalleTorneo';
@@ -58,17 +57,7 @@ const AppContent: React.FC = () => {
           }
         />
         
-        {/* Rutas de equipos y torneos */}
-        <Route
-          path="/equipos"
-          element={
-            <ProtectedRoute>
-              <MainLayout>
-                <Equipos />
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
+        {/* Rutas de torneos */}
         <Route
           path="/torneos"
           element={
@@ -101,9 +90,6 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        
-        {/* Ruta temporal - redirigir al dashboard */}
-        <Route path="/partidos" element={<Navigate to="/" replace />} />
         
         {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
