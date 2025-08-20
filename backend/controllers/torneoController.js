@@ -13,15 +13,60 @@ const obtenerTorneos = async (req, res) => {
           model: Equipo,
           as: 'equipos',
           through: { attributes: [] } // No incluir datos de la tabla intermedia
+        },
+        {
+          model: Partido,
+          as: 'partidos',
+          include: [
+            {
+              model: Equipo,
+              as: 'equipoLocal',
+              attributes: ['id', 'nombre', 'escudo_url']
+            },
+            {
+              model: Equipo,
+              as: 'equipoVisitante',
+              attributes: ['id', 'nombre', 'escudo_url']
+            }
+          ]
         }
       ],
       order: [['createdAt', 'DESC']]
     });
 
+    // Procesar cada torneo para agregar información del campeón
+    const torneosConCampeon = torneos.map(torneo => {
+      const torneoData = torneo.toJSON();
+      
+      // Si el torneo está finalizado, buscar el campeón
+      let campeon = null;
+      if (torneo.estado === 'finalizado' && torneo.tipo === 'eliminacion') {
+        const partidosJugados = torneo.partidos.filter(p => p.estado === 'jugado');
+        
+        if (partidosJugados.length > 0) {
+          const maxRonda = Math.max(...partidosJugados.map(p => p.ronda));
+          const final = partidosJugados.find(p => p.ronda === maxRonda);
+          
+          if (final) {
+            if (final.golesLocal > final.golesVisitante) {
+              campeon = final.equipoLocal;
+            } else if (final.golesVisitante > final.golesLocal) {
+              campeon = final.equipoVisitante;
+            }
+          }
+        }
+      }
+      
+      return {
+        ...torneoData,
+        campeon
+      };
+    });
+
     res.json({
       message: '✅ Torneos obtenidos exitosamente',
-      torneos,
-      total: torneos.length
+      data: torneosConCampeon,
+      total: torneosConCampeon.length
     });
   } catch (error) {
     console.error('Error al obtener torneos:', error);
@@ -37,8 +82,6 @@ const obtenerTorneo = async (req, res) => {
   try {
     const { id } = req.params;
     const usuarioId = req.usuario.id;
-    
-    console.log('🔍 Backend - Obteniendo torneo ID:', id, 'para usuario:', usuarioId);
 
     const torneo = await Torneo.findOne({
       where: { id, usuarioId },
@@ -69,18 +112,41 @@ const obtenerTorneo = async (req, res) => {
     });
 
     if (!torneo) {
-      console.log('❌ Backend - Torneo no encontrado');
       return res.status(404).json({
         error: '❌ Torneo no encontrado',
         message: 'El torneo especificado no existe o no pertenece al usuario'
       });
     }
 
-    console.log('✅ Backend - Torneo encontrado:', torneo.id, torneo.nombre);
-    console.log('📊 Backend - Estructura del torneo:', JSON.stringify(torneo, null, 2));
+    // Si el torneo está finalizado, buscar el campeón
+    let campeon = null;
+    if (torneo.estado === 'finalizado' && torneo.tipo === 'eliminacion') {
+      // Buscar el partido de la ronda más alta (la final)
+      const partidosJugados = torneo.partidos.filter(p => p.estado === 'jugado');
+      
+      if (partidosJugados.length > 0) {
+        // Encontrar la ronda más alta
+        const maxRonda = Math.max(...partidosJugados.map(p => p.ronda));
+        
+        // Buscar el partido de la final
+        const final = partidosJugados.find(p => p.ronda === maxRonda);
+        
+        if (final) {
+          if (final.golesLocal > final.golesVisitante) {
+            campeon = final.equipoLocal;
+          } else if (final.golesVisitante > final.golesLocal) {
+            campeon = final.equipoVisitante;
+          }
+        }
+      }
+    }
+
     res.json({
       message: '✅ Torneo obtenido exitosamente',
-      torneo
+      torneo: {
+        ...torneo.toJSON(),
+        campeon
+      }
     });
   } catch (error) {
     console.error('Error al obtener torneo:', error);

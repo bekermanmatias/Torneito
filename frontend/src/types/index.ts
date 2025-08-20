@@ -49,6 +49,7 @@ export interface Torneo {
   usuarioId: number;
   equipos?: Equipo[];
   partidos?: Partido[];
+  campeon?: Equipo;
   createdAt: string;
   updatedAt: string;
 }
@@ -56,7 +57,7 @@ export interface Torneo {
 export interface CreateTorneoData {
   nombre: string;
   tipo: TorneoTipo;
-  equiposIds?: number[];
+  equiposIds: number[];
   equiposNuevos?: string[];
 }
 

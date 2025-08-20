@@ -51,8 +51,8 @@ const Torneos: React.FC = () => {
         equipoService.getAll()
       ]);
       // Asegurar que los datos sean arrays
-      const torneosData = Array.isArray(torneosRes.data) ? torneosRes.data : [];
-      const equiposData = Array.isArray(equiposRes.data) ? equiposRes.data : [];
+      const torneosData = Array.isArray(torneosRes.data.data) ? torneosRes.data.data : [];
+      const equiposData = Array.isArray(equiposRes.data.data) ? equiposRes.data.data : [];
       setTorneos(torneosData);
       setEquipos(equiposData);
     } catch (error: any) {
@@ -261,6 +261,14 @@ const Torneos: React.FC = () => {
                     <p>Equipos: {torneo.equipos?.length || 0}</p>
                     <p>Creado: {new Date(torneo.createdAt).toLocaleDateString()}</p>
                   </div>
+                  {torneo.estado === 'finalizado' && torneo.campeon && (
+                    <div className="mt-2 p-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-md">
+                      <div className="flex items-center space-x-1">
+                        <Trophy className="w-4 h-4 text-yellow-800" />
+                        <span className="text-sm font-bold text-yellow-900">{torneo.campeon.nombre}</span>
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-3">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTorneoStatusColor(torneo.estado)}`}>
                       {getTorneoStatusText(torneo.estado)}
@@ -269,6 +277,7 @@ const Torneos: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-2 ml-4">
                   <button
+                    onClick={() => window.location.href = `/torneos/${torneo.id}`}
                     className="p-2 text-gray-400 hover:text-primary-600 transition-colors"
                     title="Ver detalles"
                   >

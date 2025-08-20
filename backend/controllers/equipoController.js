@@ -12,7 +12,7 @@ const obtenerEquipos = async (req, res) => {
 
     res.json({
       message: '✅ Equipos obtenidos exitosamente',
-      equipos,
+      data: equipos,
       total: equipos.length
     });
   } catch (error) {

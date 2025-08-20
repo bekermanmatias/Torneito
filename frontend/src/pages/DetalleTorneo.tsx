@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Trophy, 
   ArrowLeft,
-  Users,
-  Calendar,
   Play,
   CheckCircle,
   XCircle,
@@ -15,7 +13,6 @@ import type { Torneo, Partido, Equipo } from '../types';
 import CuadroEliminacion from '../components/CuadroEliminacion';
 
 const DetalleTorneo: React.FC = () => {
-  console.log('🚀 DetalleTorneo - Componente montado');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [torneo, setTorneo] = useState<Torneo | null>(null);
@@ -32,7 +29,6 @@ const DetalleTorneo: React.FC = () => {
 
   const loadTorneo = async () => {
     try {
-      console.log('🔍 DetalleTorneo - Cargando torneo con ID:', id);
       setLoading(true);
       
       const [torneoRes, partidosRes] = await Promise.all([
@@ -40,14 +36,10 @@ const DetalleTorneo: React.FC = () => {
         partidoService.getByTorneo(parseInt(id!))
       ]);
       
-      console.log('✅ DetalleTorneo - Torneo cargado:', torneoRes.data);
-      console.log('✅ DetalleTorneo - Partidos cargados:', partidosRes.data);
-      console.log('🔍 DetalleTorneo - Estructura del torneo:', JSON.stringify(torneoRes.data, null, 2));
-      
       setTorneo(torneoRes.data.torneo);
       setPartidos(partidosRes.data.partidos || []);
     } catch (error: any) {
-      console.error('❌ DetalleTorneo - Error loading torneo:', error);
+      console.error('Error loading torneo:', error);
       setError('Error al cargar el torneo');
     } finally {
       setLoading(false);
@@ -80,8 +72,6 @@ const DetalleTorneo: React.FC = () => {
     try {
       setUpdatingResult(true);
       
-      console.log('🔄 Actualizando resultado:', { partidoId, golesLocal, golesVisitante, isEditing });
-      
       // Si estamos editando un partido ya jugado, usar actualizarResultado
       if (isEditing) {
         await partidoService.updateResult(partidoId, { golesLocal, golesVisitante });
@@ -90,15 +80,11 @@ const DetalleTorneo: React.FC = () => {
         await partidoService.registerResult(partidoId, { golesLocal, golesVisitante });
       }
       
-      console.log('✅ Resultado actualizado exitosamente');
-      
-      // No recargar los datos para evitar parpadeo
-      // Los datos se actualizarán localmente en el componente CuadroEliminacion
-      
-      console.log('✅ Operación completada sin recarga');
+      // Recargar los datos para mostrar las nuevas rondas generadas
+      await loadTorneo();
       
     } catch (error: any) {
-      console.error('❌ Error al actualizar resultado:', error);
+      console.error('Error al actualizar resultado:', error);
       throw error;
     } finally {
       setUpdatingResult(false);
@@ -134,8 +120,7 @@ const DetalleTorneo: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate('/')}
@@ -143,54 +128,28 @@ const DetalleTorneo: React.FC = () => {
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{torneo.nombre}</h1>
-              <div className="flex items-center space-x-4 mt-2">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTipoColor(torneo.tipo)}`}>
-                  {torneo.tipo === 'eliminacion' ? 'Eliminación Directa' : 'Liga'}
-                </span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1 ${getEstadoColor(torneo.estado)}`}>
-                  {getEstadoIcon(torneo.estado)}
-                  <span className="capitalize">{torneo.estado ? torneo.estado.replace('_', ' ') : 'Desconocido'}</span>
-                </span>
+            <h1 className="text-3xl font-bold text-gray-900">{torneo.nombre}</h1>
+            {torneo.estado === 'finalizado' && torneo.campeon && (
+              <div className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg shadow-lg">
+                <Trophy className="w-6 h-6 text-yellow-800" />
+                <span className="text-lg font-bold text-yellow-900">{torneo.campeon.nombre}</span>
               </div>
-            </div>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTipoColor(torneo.tipo)}`}>
+              {torneo.tipo === 'eliminacion' ? 'Eliminación Directa' : 'Liga'}
+            </span>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              torneo.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+              torneo.estado === 'en_curso' ? 'bg-blue-100 text-blue-800' :
+              'bg-green-100 text-green-800'
+            }`}>
+              {torneo.estado === 'pendiente' ? 'Pendiente' :
+               torneo.estado === 'en_curso' ? 'En Progreso' : 'Finalizado'}
+            </span>
           </div>
         </div>
-      </div>
-
-      {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="card">
-          <div className="flex items-center">
-            <Users className="w-8 h-8 text-primary-600 mr-3" />
-            <div>
-              <p className="text-sm text-gray-600">Equipos</p>
-              <p className="text-2xl font-bold text-gray-900">{torneo.equipos?.length || 0}</p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center">
-            <Calendar className="w-8 h-8 text-primary-600 mr-3" />
-            <div>
-              <p className="text-sm text-gray-600">Partidos</p>
-              <p className="text-2xl font-bold text-gray-900">{partidos.length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center">
-            <Trophy className="w-8 h-8 text-primary-600 mr-3" />
-            <div>
-              <p className="text-sm text-gray-600">Jugados</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {partidos.filter(p => p.estado === 'jugado').length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Equipos participantes */}
       {torneo.equipos && torneo.equipos.length > 0 && (
@@ -219,7 +178,8 @@ const DetalleTorneo: React.FC = () => {
             partidos={partidos} 
             equipos={torneo.equipos || []} 
             onUpdateResult={handleUpdateResult}
-            disableReload={true}
+            disableReload={false}
+            campeon={torneo.campeon}
           />
         </div>
       )}

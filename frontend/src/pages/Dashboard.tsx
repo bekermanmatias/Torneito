@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
     const loadDashboardData = async () => {
       try {
         const torneosRes = await torneoService.getAll();
-        const torneos = Array.isArray(torneosRes.data) ? torneosRes.data : [];
+        const torneos = Array.isArray(torneosRes.data.data) ? torneosRes.data.data : [];
         setRecentTorneos(torneos.slice(0, 5)); // Mostrar los 5 más recientes
       } catch (error) {
         console.error('Error loading tournaments:', error);

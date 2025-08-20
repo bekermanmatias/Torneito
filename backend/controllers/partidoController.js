@@ -137,6 +137,16 @@ const registrarResultado = async (req, res) => {
           as: 'torneo',
           where: { usuarioId },
           attributes: ['id', 'nombre', 'tipo', 'estado']
+        },
+        {
+          model: Equipo,
+          as: 'equipoLocal',
+          attributes: ['id', 'nombre', 'escudo_url']
+        },
+        {
+          model: Equipo,
+          as: 'equipoVisitante',
+          attributes: ['id', 'nombre', 'escudo_url']
         }
       ]
     });
@@ -248,6 +258,14 @@ const actualizarResultado = async (req, res) => {
       });
     }
 
+    // Para torneos de eliminación, no permitir editar partidos ya jugados
+    if (partido.torneo.tipo === 'eliminacion') {
+      return res.status(400).json({
+        error: '❌ No se puede editar',
+        message: 'No se puede editar el resultado de un partido ya jugado en torneos de eliminación directa'
+      });
+    }
+
     // Actualizar el partido
     await partido.update({
       golesLocal,
@@ -314,6 +332,14 @@ const eliminarResultado = async (req, res) => {
       return res.status(400).json({
         error: '❌ Partido no jugado',
         message: 'Este partido no tiene un resultado registrado'
+      });
+    }
+
+    // Para torneos de eliminación, no permitir eliminar resultados
+    if (partido.torneo.tipo === 'eliminacion') {
+      return res.status(400).json({
+        error: '❌ No se puede eliminar',
+        message: 'No se puede eliminar el resultado de un partido en torneos de eliminación directa'
       });
     }
 
@@ -474,6 +500,7 @@ const obtenerEstadisticasEquipo = async (req, res) => {
 // Función para generar la siguiente ronda en torneos de eliminación
 const generarSiguienteRonda = async (torneoId, rondaActual) => {
   try {
+    
     // Verificar si todos los partidos de la ronda actual están completados
     const partidosRondaActual = await Partido.findAll({
       where: {
@@ -481,7 +508,7 @@ const generarSiguienteRonda = async (torneoId, rondaActual) => {
         ronda: rondaActual
       }
     });
-
+    
     const partidosCompletados = partidosRondaActual.filter(p => p.estado === 'jugado');
     
     // Si no todos los partidos están completados, no generar siguiente ronda
@@ -505,12 +532,15 @@ const generarSiguienteRonda = async (torneoId, rondaActual) => {
     // Obtener los ganadores de la ronda actual
     const ganadores = [];
     for (const partido of partidosCompletados) {
+      
       if (partido.golesLocal > partido.golesVisitante) {
         ganadores.push(partido.equipoLocalId);
       } else if (partido.golesVisitante > partido.golesLocal) {
         ganadores.push(partido.equipoVisitanteId);
+      } else {
+        // En caso de empate, no avanzar ningún equipo
+        // Esto podría modificarse para implementar penales o tiempo extra
       }
-      // En caso de empate, no avanzar ningún equipo (esto se puede modificar según las reglas)
     }
 
     // Si solo queda un ganador, es la final
@@ -521,6 +551,15 @@ const generarSiguienteRonda = async (torneoId, rondaActual) => {
         { where: { id: torneoId } }
       );
       return;
+    }
+
+    // Si no hay ganadores (todos empates), no generar siguiente ronda
+    if (ganadores.length === 0) {
+      return;
+    }
+
+    // Si hay un número impar de ganadores, el último pasa directamente
+    if (ganadores.length % 2 !== 0) {
     }
 
     // Generar partidos para la siguiente ronda
@@ -540,13 +579,15 @@ const generarSiguienteRonda = async (torneoId, rondaActual) => {
         });
 
         fechaPartido.setDate(fechaPartido.getDate() + 2);
+      } else {
+        // Si queda un equipo sin pareja, pasa directamente a la siguiente ronda
       }
     }
 
     // Crear los partidos de la nueva ronda
     if (partidosNuevaRonda.length > 0) {
       await Partido.bulkCreate(partidosNuevaRonda);
-      console.log(`✅ Generada ronda ${siguienteRonda} con ${partidosNuevaRonda.length} partidos`);
+    } else {
     }
 
   } catch (error) {

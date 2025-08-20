@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// Función para obtener la URL de la API dinámicamente
+const getAPIUrl = () => {
+  // En desarrollo, usar localhost
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001/api';
+  }
+  
+  // En producción, usar la URL del servidor
+  return import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+};
+
+const API_BASE_URL = getAPIUrl();
 
 // Crear instancia de axios
 const api = axios.create({

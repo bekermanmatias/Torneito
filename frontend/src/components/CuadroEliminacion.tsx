@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Award, Edit2, Save, X, Plus, Minus } from 'lucide-react';
+import { Trophy, Award, Edit2, Save, X, Plus, Minus, CheckCircle } from 'lucide-react';
 import type { Partido, Equipo } from '../types';
 
 interface CuadroEliminacionProps {
@@ -7,6 +7,7 @@ interface CuadroEliminacionProps {
   equipos: Equipo[];
   onUpdateResult?: (partidoId: number, golesLocal: number, golesVisitante: number, isEditing?: boolean) => Promise<void>;
   disableReload?: boolean; // Prop para evitar recarga de datos
+  campeon?: Equipo; // Prop para el campeón del torneo
 }
 
 interface Ronda {
@@ -15,7 +16,7 @@ interface Ronda {
   titulo: string;
 }
 
-const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos, onUpdateResult, disableReload = false }) => {
+const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos, onUpdateResult, disableReload = false, campeon }) => {
   const [editingPartido, setEditingPartido] = useState<number | null>(null);
   const [editGolesLocal, setEditGolesLocal] = useState<number>(0);
   const [editGolesVisitante, setEditGolesVisitante] = useState<number>(0);
@@ -204,6 +205,11 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
       return;
     }
     
+    // No permitir editar partidos ya jugados
+    if (partido.estado === 'jugado') {
+      return;
+    }
+    
     setEditingPartido(partido.id);
     // Si el partido ya tiene goles, usar esos valores, sino usar 0
     setEditGolesLocal(partido.golesLocal !== null && partido.golesLocal !== undefined ? partido.golesLocal : 0);
@@ -281,6 +287,11 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     const estaEnCamino = caminoEquipo.includes(partido.id);
     const esPartidoHovered = hoveredEquipo?.partidoId === partido.id;
     
+    // Verificar si este es el partido de la final y si hay un campeón
+    const esFinal = partido.ronda === totalRondas;
+    const esCampeonLocal = esFinal && campeon && partido.equipoLocal?.id === campeon.id;
+    const esCampeonVisitante = esFinal && campeon && partido.equipoVisitante?.id === campeon.id;
+    
           return (
         <div 
           key={partido.id} 
@@ -319,13 +330,20 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => handleEdit(partido)}
-                  className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center"
-                  title={jugado ? 'Editar' : 'Registrar'}
-                >
-                  <Edit2 className="w-3 h-3" />
-                </button>
+                // Solo mostrar botón de editar si el partido no está jugado
+                !jugado ? (
+                  <button
+                    onClick={() => handleEdit(partido)}
+                    className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center"
+                    title="Registrar resultado"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                ) : (
+                  <div className="w-5 h-5 flex items-center justify-center" title="No se puede editar un partido ya jugado">
+                    <CheckCircle className="w-3 h-3 text-green-500" />
+                  </div>
+                )
               )}
             </div>
           )}
@@ -339,9 +357,15 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
           'bg-white border-gray-200'
         }`}>
           {/* Equipo Local */}
-          <div className="flex items-center justify-between p-3 border-b border-gray-200">
+          <div className={`flex items-center justify-between p-3 border-b border-gray-200 ${
+            esCampeonLocal ? 'bg-gradient-to-r from-yellow-100 to-yellow-200' : ''
+          }`}>
             <span 
-              className="text-sm text-gray-700 truncate flex-1 cursor-pointer hover:text-blue-600 transition-colors"
+              className={`text-sm truncate flex-1 cursor-pointer transition-colors ${
+                esCampeonLocal 
+                  ? 'text-yellow-800 font-bold hover:text-yellow-900' 
+                  : 'text-gray-700 hover:text-blue-600'
+              }`}
               onMouseEnter={() => setHoveredEquipo({partidoId: partido.id, equipoNombre: partido.equipoLocal?.nombre || ''})}
               onMouseLeave={() => setHoveredEquipo(null)}
             >
@@ -383,9 +407,15 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
           </div>
           
           {/* Equipo Visitante */}
-          <div className="flex items-center justify-between p-3">
+          <div className={`flex items-center justify-between p-3 ${
+            esCampeonVisitante ? 'bg-gradient-to-r from-yellow-100 to-yellow-200' : ''
+          }`}>
             <span 
-              className="text-sm text-gray-700 truncate flex-1 cursor-pointer hover:text-blue-600 transition-colors"
+              className={`text-sm truncate flex-1 cursor-pointer transition-colors ${
+                esCampeonVisitante 
+                  ? 'text-yellow-800 font-bold hover:text-yellow-900' 
+                  : 'text-gray-700 hover:text-blue-600'
+              }`}
               onMouseEnter={() => setHoveredEquipo({partidoId: partido.id, equipoNombre: partido.equipoVisitante?.nombre || ''})}
               onMouseLeave={() => setHoveredEquipo(null)}
             >
