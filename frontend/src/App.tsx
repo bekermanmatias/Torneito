@@ -5,7 +5,9 @@ import Navigation from './components/Navigation';
 import LoginForm from './components/LoginForm';
 import Dashboard from './pages/Dashboard';
 import Torneos from './pages/Torneos';
-import CrearTorneo from './pages/CrearTorneo';
+import Perfil from './pages/Perfil';
+import CrearEliminacion from './pages/CrearEliminacion';
+import CrearLiga from './pages/CrearLiga';
 import DetalleTorneo from './pages/DetalleTorneo';
 
 // Componente para rutas protegidas
@@ -57,7 +59,7 @@ const AppContent: React.FC = () => {
           }
         />
         
-        {/* Rutas de torneos */}
+                {/* Rutas de torneos */}
         <Route
           path="/torneos"
           element={
@@ -69,12 +71,35 @@ const AppContent: React.FC = () => {
           }
         />
         
+        {/* Rutas de creación de torneos */}
         <Route
-          path="/crear-torneo"
+          path="/crear-eliminacion"
           element={
             <ProtectedRoute>
               <MainLayout>
-                <CrearTorneo />
+                <CrearEliminacion />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/crear-liga"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <CrearLiga />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Perfil />
               </MainLayout>
             </ProtectedRoute>
           }

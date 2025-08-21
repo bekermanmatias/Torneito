@@ -4,6 +4,8 @@ import { ArrowLeft, Trophy, XCircle, AlertCircle, Play, CheckCircle } from 'luci
 import { torneoService, partidoService } from '../services/api';
 import type { Torneo, Partido, Equipo } from '../types';
 import CuadroEliminacion from '../components/CuadroEliminacion';
+import TablaPosiciones from '../components/TablaPosiciones';
+import CalendarioLiga from '../components/CalendarioLiga';
 
 const DetalleTorneo: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -144,6 +146,14 @@ const DetalleTorneo: React.FC = () => {
           </div>
         </div>
 
+      {/* Tabla de Posiciones para Liga */}
+      {torneo.tipo === 'liga' && (
+        <div className="card mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Tabla de Posiciones</h2>
+          <TablaPosiciones partidos={partidos} equipos={torneo.equipos || []} />
+        </div>
+      )}
+
       {/* Cuadro de Eliminación */}
       {torneo.tipo === 'eliminacion' && (
         <div className="card">
@@ -154,6 +164,18 @@ const DetalleTorneo: React.FC = () => {
             onUpdateResult={handleUpdateResult}
             disableReload={false}
             campeon={torneo.campeon}
+          />
+        </div>
+      )}
+
+      {/* Calendario de Partidos para Liga */}
+      {torneo.tipo === 'liga' && (
+        <div className="card">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Calendario de Partidos</h2>
+          <CalendarioLiga 
+            partidos={partidos} 
+            equipos={torneo.equipos || []} 
+            onUpdateResult={handleUpdateResult}
           />
         </div>
       )}

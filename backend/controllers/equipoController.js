@@ -4,11 +4,14 @@ const { Equipo } = require('../models');
 const obtenerEquipos = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
+    console.log('🔍 Backend - Obteniendo equipos para usuario ID:', usuarioId);
     
     const equipos = await Equipo.findAll({
       where: { usuarioId },
       order: [['nombre', 'ASC']]
     });
+
+    console.log('✅ Backend - Equipos encontrados:', equipos.length);
 
     res.json({
       message: '✅ Equipos obtenidos exitosamente',

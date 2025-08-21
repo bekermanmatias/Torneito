@@ -40,18 +40,75 @@ const obtenerTorneos = async (req, res) => {
       
       // Si el torneo está finalizado, buscar el campeón
       let campeon = null;
-      if (torneo.estado === 'finalizado' && torneo.tipo === 'eliminacion') {
-        const partidosJugados = torneo.partidos.filter(p => p.estado === 'jugado');
-        
-        if (partidosJugados.length > 0) {
-          const maxRonda = Math.max(...partidosJugados.map(p => p.ronda));
-          const final = partidosJugados.find(p => p.ronda === maxRonda);
+      if (torneo.estado === 'finalizado') {
+        if (torneo.tipo === 'eliminacion') {
+          const partidosJugados = torneo.partidos.filter(p => p.estado === 'jugado');
           
-          if (final) {
-            if (final.golesLocal > final.golesVisitante) {
-              campeon = final.equipoLocal;
-            } else if (final.golesVisitante > final.golesLocal) {
-              campeon = final.equipoVisitante;
+          if (partidosJugados.length > 0) {
+            const maxRonda = Math.max(...partidosJugados.map(p => p.ronda));
+            const final = partidosJugados.find(p => p.ronda === maxRonda);
+            
+            if (final) {
+              if (final.golesLocal > final.golesVisitante) {
+                campeon = final.equipoLocal;
+              } else if (final.golesVisitante > final.golesLocal) {
+                campeon = final.equipoVisitante;
+              }
+            }
+          }
+        } else if (torneo.tipo === 'liga') {
+          // Para liga, el campeón es el equipo con más puntos
+          const partidosJugados = torneo.partidos.filter(p => p.estado === 'jugado');
+          
+          if (partidosJugados.length > 0) {
+            // Calcular estadísticas de cada equipo
+            const estadisticas = {};
+            
+            // Inicializar estadísticas
+            torneo.equipos.forEach(equipo => {
+              estadisticas[equipo.id] = {
+                equipo,
+                puntos: 0,
+                diferenciaGoles: 0,
+                golesFavor: 0
+              };
+            });
+            
+            // Calcular puntos de partidos jugados
+            partidosJugados.forEach(partido => {
+              if (partido.golesLocal !== null && partido.golesVisitante !== null) {
+                const equipoLocal = estadisticas[partido.equipoLocalId];
+                const equipoVisitante = estadisticas[partido.equipoVisitanteId];
+                
+                if (equipoLocal && equipoVisitante) {
+                  // Actualizar goles
+                  equipoLocal.golesFavor += partido.golesLocal;
+                  equipoLocal.diferenciaGoles += (partido.golesLocal - partido.golesVisitante);
+                  equipoVisitante.golesFavor += partido.golesVisitante;
+                  equipoVisitante.diferenciaGoles += (partido.golesVisitante - partido.golesLocal);
+                  
+                  // Determinar puntos
+                  if (partido.golesLocal > partido.golesVisitante) {
+                    equipoLocal.puntos += 3;
+                  } else if (partido.golesVisitante > partido.golesLocal) {
+                    equipoVisitante.puntos += 3;
+                  } else {
+                    equipoLocal.puntos += 1;
+                    equipoVisitante.puntos += 1;
+                  }
+                }
+              }
+            });
+            
+            // Encontrar el campeón (más puntos, luego diferencia de goles, luego goles a favor)
+            const equiposOrdenados = Object.values(estadisticas).sort((a, b) => {
+              if (b.puntos !== a.puntos) return b.puntos - a.puntos;
+              if (b.diferenciaGoles !== a.diferenciaGoles) return b.diferenciaGoles - a.diferenciaGoles;
+              return b.golesFavor - a.golesFavor;
+            });
+            
+            if (equiposOrdenados.length > 0) {
+              campeon = equiposOrdenados[0].equipo;
             }
           }
         }
@@ -120,22 +177,79 @@ const obtenerTorneo = async (req, res) => {
 
     // Si el torneo está finalizado, buscar el campeón
     let campeon = null;
-    if (torneo.estado === 'finalizado' && torneo.tipo === 'eliminacion') {
-      // Buscar el partido de la ronda más alta (la final)
-      const partidosJugados = torneo.partidos.filter(p => p.estado === 'jugado');
-      
-      if (partidosJugados.length > 0) {
-        // Encontrar la ronda más alta
-        const maxRonda = Math.max(...partidosJugados.map(p => p.ronda));
+    if (torneo.estado === 'finalizado') {
+      if (torneo.tipo === 'eliminacion') {
+        // Buscar el partido de la ronda más alta (la final)
+        const partidosJugados = torneo.partidos.filter(p => p.estado === 'jugado');
         
-        // Buscar el partido de la final
-        const final = partidosJugados.find(p => p.ronda === maxRonda);
+        if (partidosJugados.length > 0) {
+          // Encontrar la ronda más alta
+          const maxRonda = Math.max(...partidosJugados.map(p => p.ronda));
+          
+          // Buscar el partido de la final
+          const final = partidosJugados.find(p => p.ronda === maxRonda);
+          
+          if (final) {
+            if (final.golesLocal > final.golesVisitante) {
+              campeon = final.equipoLocal;
+            } else if (final.golesVisitante > final.golesLocal) {
+              campeon = final.equipoVisitante;
+            }
+          }
+        }
+      } else if (torneo.tipo === 'liga') {
+        // Para liga, el campeón es el equipo con más puntos
+        const partidosJugados = torneo.partidos.filter(p => p.estado === 'jugado');
         
-        if (final) {
-          if (final.golesLocal > final.golesVisitante) {
-            campeon = final.equipoLocal;
-          } else if (final.golesVisitante > final.golesLocal) {
-            campeon = final.equipoVisitante;
+        if (partidosJugados.length > 0) {
+          // Calcular estadísticas de cada equipo
+          const estadisticas = {};
+          
+          // Inicializar estadísticas
+          torneo.equipos.forEach(equipo => {
+            estadisticas[equipo.id] = {
+              equipo,
+              puntos: 0,
+              diferenciaGoles: 0,
+              golesFavor: 0
+            };
+          });
+          
+          // Calcular puntos de partidos jugados
+          partidosJugados.forEach(partido => {
+            if (partido.golesLocal !== null && partido.golesVisitante !== null) {
+              const equipoLocal = estadisticas[partido.equipoLocalId];
+              const equipoVisitante = estadisticas[partido.equipoVisitanteId];
+              
+              if (equipoLocal && equipoVisitante) {
+                // Actualizar goles
+                equipoLocal.golesFavor += partido.golesLocal;
+                equipoLocal.diferenciaGoles += (partido.golesLocal - partido.golesVisitante);
+                equipoVisitante.golesFavor += partido.golesVisitante;
+                equipoVisitante.diferenciaGoles += (partido.golesVisitante - partido.golesLocal);
+                
+                // Determinar puntos
+                if (partido.golesLocal > partido.golesVisitante) {
+                  equipoLocal.puntos += 3;
+                } else if (partido.golesVisitante > partido.golesLocal) {
+                  equipoVisitante.puntos += 3;
+                } else {
+                  equipoLocal.puntos += 1;
+                  equipoVisitante.puntos += 1;
+                }
+              }
+            }
+          });
+          
+          // Encontrar el campeón (más puntos, luego diferencia de goles, luego goles a favor)
+          const equiposOrdenados = Object.values(estadisticas).sort((a, b) => {
+            if (b.puntos !== a.puntos) return b.puntos - a.puntos;
+            if (b.diferenciaGoles !== a.diferenciaGoles) return b.diferenciaGoles - a.diferenciaGoles;
+            return b.golesFavor - a.golesFavor;
+          });
+          
+          if (equiposOrdenados.length > 0) {
+            campeon = equiposOrdenados[0].equipo;
           }
         }
       }
@@ -160,7 +274,7 @@ const obtenerTorneo = async (req, res) => {
 // Crear nuevo torneo
 const crearTorneo = async (req, res) => {
   try {
-    const { nombre, tipo, equiposIds, equiposNuevos } = req.body;
+    const { nombre, tipo, equiposIds, equiposNuevos, configuracion } = req.body;
     const usuarioId = req.usuario.id;
 
     // Validar campos requeridos
@@ -194,42 +308,41 @@ const crearTorneo = async (req, res) => {
     if (equiposIds && Array.isArray(equiposIds) && equiposIds.length > 0) {
       const equiposExistentes = await Equipo.findAll({
         where: {
-          id: { [Op.in]: equiposIds },
-          usuarioId
+          id: { [Op.in]: equiposIds }
         }
       });
 
       if (equiposExistentes.length !== equiposIds.length) {
         return res.status(400).json({
           error: '❌ Equipos inválidos',
-          message: 'Algunos equipos no existen o no pertenecen al usuario'
+          message: 'Algunos equipos no existen'
         });
       }
       equiposFinales = equiposExistentes;
     }
 
-               // Crear equipos nuevos si se proporcionan
-           if (equiposNuevos && Array.isArray(equiposNuevos) && equiposNuevos.length > 0) {
-             for (const nombreEquipo of equiposNuevos) {
-               if (nombreEquipo && nombreEquipo.trim()) {
-                 try {
-                   const nuevoEquipo = await Equipo.create({
-                     nombre: nombreEquipo.trim(),
-                     usuarioId
-                   });
-                   equiposFinales.push(nuevoEquipo);
-                 } catch (error) {
-                   if (error.name === 'SequelizeValidationError') {
-                     return res.status(400).json({
-                       error: '❌ Nombre de equipo inválido',
-                       message: `El equipo "${nombreEquipo}" no es válido: ${error.errors[0].message}`
-                     });
-                   }
-                   throw error;
-                 }
-               }
-             }
-           }
+    // Crear equipos nuevos si se proporcionan
+    if (equiposNuevos && Array.isArray(equiposNuevos) && equiposNuevos.length > 0) {
+      for (const nombreEquipo of equiposNuevos) {
+        if (nombreEquipo && nombreEquipo.trim()) {
+          try {
+            const nuevoEquipo = await Equipo.create({
+              nombre: nombreEquipo.trim(),
+              usuarioId
+            });
+            equiposFinales.push(nuevoEquipo);
+          } catch (error) {
+            if (error.name === 'SequelizeValidationError') {
+              return res.status(400).json({
+                error: '❌ Nombre de equipo inválido',
+                message: `El equipo "${nombreEquipo}" no es válido: ${error.errors[0].message}`
+              });
+            }
+            throw error;
+          }
+        }
+      }
+    }
 
     // Validar número mínimo de equipos
     if (equiposFinales.length < 2) {
@@ -250,13 +363,20 @@ const crearTorneo = async (req, res) => {
       }
     }
 
-    // Crear el torneo
-    const nuevoTorneo = await Torneo.create({
+    // Crear el torneo con configuración
+    const datosTorneo = {
       nombre,
       tipo,
       estado: 'pendiente',
       usuarioId
-    });
+    };
+
+    // Agregar configuración si se proporciona
+    if (configuracion) {
+      datosTorneo.configuracion = JSON.stringify(configuracion);
+    }
+
+    const nuevoTorneo = await Torneo.create(datosTorneo);
 
     // Obtener IDs de los equipos finales
     const equiposIdsFinales = equiposFinales.map(equipo => equipo.id);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Trophy, 
@@ -14,6 +14,25 @@ const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar menú de usuario cuando se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   const navItems = [
     { label: 'Inicio', path: '/', icon: Home },
@@ -66,17 +85,39 @@ const Navigation: React.FC = () => {
           <div className="flex items-center">
             {/* Usuario desktop */}
             <div className="hidden md:flex md:items-center md:space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-700">
-                <User className="h-4 w-4" />
-                <span>{user?.nombre}</span>
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                >
+                  <User className="h-4 w-4" />
+                  <span>{user?.nombre}</span>
+                </button>
+                
+                {/* Menú desplegable del usuario */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                    <Link
+                      to="/perfil"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      <User className="h-4 w-4 mr-3" />
+                      Mi Perfil
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        handleLogout();
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    >
+                      <LogOut className="h-4 w-4 mr-3" />
+                      Cerrar sesión
+                    </button>
+                  </div>
+                )}
               </div>
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Cerrar sesión
-              </button>
             </div>
 
             {/* Botón menú móvil */}
@@ -127,6 +168,14 @@ const Navigation: React.FC = () => {
                 <User className="h-4 w-4 mr-2" />
                 <span>{user?.nombre}</span>
               </div>
+              <Link
+                to="/perfil"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200"
+              >
+                <User className="h-5 w-5 mr-3" />
+                Mi Perfil
+              </Link>
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors duration-200"

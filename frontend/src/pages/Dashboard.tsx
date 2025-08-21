@@ -79,7 +79,7 @@ const Dashboard: React.FC = () => {
       {/* Botones de Crear Torneo */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
         <Link
-          to="/crear-torneo?tipo=eliminacion"
+          to="/crear-eliminacion"
           className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-red-500 to-red-600 p-8 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
           <div className="relative z-10">
@@ -99,7 +99,7 @@ const Dashboard: React.FC = () => {
         </Link>
 
         <Link
-          to="/crear-torneo?tipo=liga"
+          to="/crear-liga"
           className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-8 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
           <div className="relative z-10">
@@ -119,10 +119,10 @@ const Dashboard: React.FC = () => {
         </Link>
       </div>
 
-      {/* Historial de Torneos */}
+      {/* Recientes */}
       <div className="card">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Historial de Torneos</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Recientes</h2>
         </div>
 
         {recentTorneos.length === 0 ? (
@@ -165,9 +165,9 @@ const Dashboard: React.FC = () => {
               </div>
             ))}
           </div>
-        )}
+                  )}
+        </div>
       </div>
-    </div>
   );
 };
 

@@ -54,14 +54,16 @@ export const authService = {
   
   login: (credentials: { email: string; password: string }) =>
     api.post('/usuarios/login', credentials),
-  
+};
+
+// Servicios de usuario/perfil
+export const usuarioService = {
   getProfile: () => api.get('/usuarios/profile'),
   
-  updateProfile: (userData: { nombre?: string; email?: string }) =>
+  updateProfile: (userData: { nombre?: string; email?: string; passwordActual?: string; passwordNuevo?: string }) =>
     api.put('/usuarios/profile', userData),
   
-  changePassword: (passwordData: { currentPassword: string; newPassword: string }) =>
-    api.put('/usuarios/password', passwordData),
+  getStats: () => api.get('/usuarios/stats'),
 };
 
 // Servicios de equipos
@@ -87,7 +89,7 @@ export const torneoService = {
   
   getById: (id: number) => api.get(`/torneos/${id}`),
   
-  create: (torneoData: { nombre: string; tipo: 'liga' | 'eliminacion'; equiposIds: number[] }) =>
+  create: (torneoData: { nombre: string; tipo: 'liga' | 'eliminacion'; equiposIds?: number[]; equiposNuevos?: string[] }) =>
     api.post('/torneos', torneoData),
   
   update: (id: number, torneoData: { nombre?: string; estado?: string }) =>

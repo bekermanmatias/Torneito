@@ -472,46 +472,68 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
   }
 
   return (
-          <div className="w-full bg-gray-50 p-4">
+    <div className="space-y-6">
+      {/* Cuadro de Eliminación */}
+      <div className="overflow-x-auto">
         <div className="flex flex-col space-y-8 max-w-7xl mx-auto">
-        {rondas.map((ronda, rondaIndex) => (
-          <div key={ronda.numero} className="flex flex-col w-full">
-            {/* Título de la ronda */}
-            <div className="mb-4 text-center w-full">
-              <h3 className="text-lg font-medium text-gray-700">
-                {ronda.titulo}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {ronda.partidos.filter(p => p.estado === 'jugado').length} de {ronda.partidos.length} jugados
-              </p>
+          {rondas.map((ronda, rondaIndex) => (
+            <div key={ronda.numero} className="flex flex-col w-full">
+              {/* Título de la ronda */}
+              <div className="mb-4 text-center w-full">
+                <h3 className="text-lg font-medium text-gray-700">
+                  {ronda.titulo}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  {ronda.partidos.filter(p => p.estado === 'jugado').length} de {ronda.partidos.length} jugados
+                </p>
+              </div>
+              
+              {/* Partidos de la ronda */}
+              <div className="relative flex flex-wrap justify-center gap-6 w-full max-w-7xl">
+                {ronda.partidos.map((partido, partidoIndex) => {
+                  // Calcular el número global del partido
+                  let numeroGlobal = 1; // Empezar en 1
+                  
+                  // Sumar todos los partidos de las rondas anteriores
+                  for (let i = 0; i < rondaIndex; i++) {
+                    numeroGlobal += rondas[i].partidos.length;
+                  }
+                  
+                  // Sumar los partidos de la ronda actual hasta este índice
+                  numeroGlobal += partidoIndex;
+                  
+                  return (
+                    <div 
+                      key={partido.id} 
+                      className="relative"
+                    >
+                      {renderPartido(partido, numeroGlobal - 1, rondaIndex)} {/* Pasar el índice global y ronda */}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            
-            {/* Partidos de la ronda */}
-            <div className="relative flex flex-wrap justify-center gap-6 w-full max-w-7xl">
-              {ronda.partidos.map((partido, partidoIndex) => {
-                // Calcular el número global del partido
-                let numeroGlobal = 1; // Empezar en 1
-                
-                // Sumar todos los partidos de las rondas anteriores
-                for (let i = 0; i < rondaIndex; i++) {
-                  numeroGlobal += rondas[i].partidos.length;
-                }
-                
-                // Sumar los partidos de la ronda actual hasta este índice
-                numeroGlobal += partidoIndex;
-                
-                return (
-                  <div 
-                    key={partido.id} 
-                    className="relative"
-                  >
-                    {renderPartido(partido, numeroGlobal - 1, rondaIndex)} {/* Pasar el índice global y ronda */}
-                  </div>
-                );
-              })}
-            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Leyenda del Cuadro de Eliminación */}
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4">
+        <div className="text-sm font-bold text-gray-800 mb-3">🏆 Leyenda del Cuadro de Eliminación</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
+          <div className="space-y-1">
+            <div className="font-medium text-gray-700">Estados:</div>
+            <div>• Pendiente = Partido por jugar</div>
+            <div>• Jugado = Resultado registrado</div>
+            <div>• TBD = Por definir</div>
           </div>
-        ))}
+          <div className="space-y-1">
+            <div className="font-medium text-gray-700">Funcionalidad:</div>
+            <div>• Click en lápiz = Editar resultado</div>
+            <div>• Resultados = Se actualizan automáticamente</div>
+            <div>• Avance = Equipos pasan automáticamente</div>
+          </div>
+        </div>
       </div>
     </div>
   );

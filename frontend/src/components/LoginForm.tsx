@@ -28,22 +28,69 @@ const LoginForm: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    // Prevenir el comportamiento por defecto del formulario
     e.preventDefault();
+    
+    // Prevenir múltiples envíos
+    if (loading) {
+      console.log('⚠️ Formulario ya está procesando...');
+      return;
+    }
+    
+    // Validar campos requeridos
+    if (!formData.email || !formData.password) {
+      setError('Por favor completa todos los campos requeridos');
+      return;
+    }
+    
+    if (!isLogin && !formData.nombre) {
+      setError('Por favor ingresa tu nombre completo');
+      return;
+    }
+    
+    console.log('🔍 Iniciando proceso de login/registro...');
+    console.log('Datos del formulario:', { ...formData, password: '[HIDDEN]' });
+    
     setLoading(true);
     setError('');
 
     try {
       if (isLogin) {
+        console.log('🔐 Intentando login...');
         await login(formData.email, formData.password);
+        console.log('✅ Login exitoso');
       } else {
+        console.log('📝 Intentando registro...');
         await register(formData.nombre, formData.email, formData.password);
+        console.log('✅ Registro exitoso');
       }
       
-      // Usar window.location.href para forzar la navegación completa
-      window.location.href = '/';
+      // Limpiar el formulario
+      setFormData({ nombre: '', email: '', password: '' });
+      
+      console.log('🚀 Navegando al home...');
+      // Navegar al home usando React Router
+      navigate('/', { replace: true });
     } catch (error: any) {
       console.error('❌ Error en handleSubmit:', error);
-      setError(error.message);
+      console.error('Error completo:', error);
+      
+      // Mostrar error más detallado
+      let errorMessage = 'Error desconocido';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else if (error.request) {
+        errorMessage = 'No se pudo conectar al servidor. Verifica que el backend esté corriendo.';
+      }
+      
+      setError(errorMessage);
+      console.log('❌ Error mostrado al usuario:', errorMessage);
+      
+      // Mantener los datos del formulario para que el usuario pueda corregir
+      console.log('📝 Manteniendo datos del formulario para corrección');
     } finally {
       setLoading(false);
     }
@@ -90,12 +137,21 @@ const LoginForm: React.FC = () => {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-md">
-              {error}
-            </div>
-          )}
+                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+           {/* Mensaje de ayuda para desarrollo */}
+           {import.meta.env.DEV && (
+             <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md text-sm">
+               <strong>💡 Credenciales de prueba:</strong><br/>
+               Email: <code>test@example.com</code><br/>
+               Contraseña: <code>password123</code>
+             </div>
+           )}
+           
+           {error && (
+             <div className="bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-md">
+               <strong>❌ Error:</strong> {error}
+             </div>
+           )}
 
           <div className="space-y-4">
             {!isLogin && (
@@ -177,22 +233,26 @@ const LoginForm: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              {loading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  {isLogin ? 'Iniciando sesión...' : 'Creando cuenta...'}
-                </div>
-              ) : (
-                isLogin ? 'Iniciar sesión' : 'Crear cuenta'
-              )}
-            </button>
-          </div>
+                     <div>
+                           <button
+                type="submit"
+                disabled={loading}
+                className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md transition-all duration-200 ${
+                  loading 
+                    ? 'bg-gray-400 cursor-not-allowed opacity-75' 
+                    : 'text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
+                }`}
+              >
+               {loading ? (
+                 <div className="flex items-center">
+                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                   {isLogin ? 'Iniciando sesión...' : 'Creando cuenta...'}
+                 </div>
+               ) : (
+                 isLogin ? 'Iniciar sesión' : 'Crear cuenta'
+               )}
+             </button>
+           </div>
         </form>
       </div>
     </div>

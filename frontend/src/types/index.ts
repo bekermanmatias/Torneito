@@ -57,8 +57,16 @@ export interface Torneo {
 export interface CreateTorneoData {
   nombre: string;
   tipo: TorneoTipo;
-  equiposIds: number[];
+  equiposIds?: number[];
   equiposNuevos?: string[];
+  configuracion?: {
+    formato?: 'ida' | 'ida-vuelta' | 'simple' | 'doble';
+    puntosVictoria?: number;
+    puntosEmpate?: number;
+    puntosDerrota?: number;
+    incluirPlayoffs?: boolean;
+    incluirTercerLugar?: boolean;
+  };
 }
 
 export interface UpdateTorneoData {

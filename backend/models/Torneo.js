@@ -24,6 +24,11 @@ const Torneo = sequelize.define('Torneo', {
     allowNull: false,
     defaultValue: 'pendiente'
   },
+  configuracion: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Configuración JSON del torneo (formato, puntos, etc.)'
+  },
   usuarioId: {
     type: DataTypes.INTEGER,
     allowNull: false,

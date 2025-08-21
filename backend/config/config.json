@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "password",
+    "database": "torneito_db",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "password",
+    "database": "torneito_test",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "postgres",
+    "password": "password",
+    "database": "torneito_prod",
+    "host": "localhost",
+    "dialect": "postgres"
+  }
+}

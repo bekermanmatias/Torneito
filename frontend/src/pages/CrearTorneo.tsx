@@ -1,313 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Trophy, 
-  Plus, 
+  Zap,
+  Calendar,
   X,
-  Check,
-  AlertCircle,
-  ArrowLeft
+  Users,
+  Target,
+  Award
 } from 'lucide-react';
-import { torneoService, equipoService } from '../services/api';
-import type { Equipo, CreateTorneoData } from '../types';
 
-const CrearTorneo: React.FC = () => {
-  const [searchParams] = useSearchParams();
+interface CrearTorneoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const CrearTorneoModal: React.FC<CrearTorneoModalProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
-  const [equipos, setEquipos] = useState<Equipo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState<CreateTorneoData>({
-    nombre: '',
-    tipo: 'liga',
-    equiposIds: [] // Se llenará al crear los equipos
-  });
-  const [newEquipos, setNewEquipos] = useState<string[]>(['']);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadEquipos();
-  }, []);
-
-  // Detectar parámetros de URL para pre-seleccionar tipo de torneo
-  useEffect(() => {
-    const tipoFromUrl = searchParams.get('tipo');
-    if (tipoFromUrl && (tipoFromUrl === 'liga' || tipoFromUrl === 'eliminacion')) {
-      setFormData(prev => ({ ...prev, tipo: tipoFromUrl as 'liga' | 'eliminacion' }));
-    }
-  }, [searchParams]);
-
-  const loadEquipos = async () => {
-    try {
-      setLoading(true);
-      // Por ahora no cargamos equipos existentes ya que se crean al momento
-      setEquipos([]);
-    } catch (error: any) {
-      setError('Error al cargar los equipos');
-      console.error('Error loading equipos:', error);
-    } finally {
-      setLoading(false);
+  const handleSelectTipo = (tipo: 'liga' | 'eliminacion') => {
+    onClose();
+    if (tipo === 'liga') {
+      navigate('/crear-liga');
+    } else {
+      navigate('/crear-eliminacion');
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-             // Obtener nombres de equipos válidos (mínimo 2 caracteres)
-       const equiposNuevos = newEquipos.filter(equipo => equipo.trim().length >= 2);
-      
-             // Validar que se hayan agregado equipos
-       if (equiposNuevos.length === 0) {
-         setError('Debes agregar al menos un equipo para el torneo');
-         return;
-       }
-
-       // Validar que todos los equipos tengan al menos 2 caracteres
-       const equiposInvalidos = newEquipos.filter(equipo => equipo.trim() && equipo.trim().length < 2);
-       if (equiposInvalidos.length > 0) {
-         setError('Todos los equipos deben tener al menos 2 caracteres');
-         return;
-       }
-
-      // Validar número mínimo de equipos según el tipo
-      const minEquipos = 2;
-      if (equiposNuevos.length < minEquipos) {
-        setError(`Para un torneo necesitas al menos ${minEquipos} equipos`);
-        return;
-      }
-
-      // Para eliminación, validar que sea potencia de 2
-      if (formData.tipo === 'eliminacion') {
-        const isPowerOfTwo = (n: number) => n > 0 && (n & (n - 1)) === 0;
-        if (!isPowerOfTwo(equiposNuevos.length)) {
-          setError('Para un torneo de eliminación directa, el número de equipos debe ser una potencia de 2 (2, 4, 8, 16, etc.)');
-          return;
-        }
-      }
-
-      const torneoData = {
-        nombre: formData.nombre,
-        tipo: formData.tipo,
-        equiposNuevos
-      };
-
-      const torneoCreado = await torneoService.create(torneoData);
-      
-      // Redirigir a los detalles del torneo después de crearlo
-      navigate(`/torneo/${torneoCreado.data.torneo.id}`);
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Error al crear el torneo');
-    }
-  };
-
-  const addNewEquipo = () => {
-    setNewEquipos([...newEquipos, '']);
-  };
-
-  const removeNewEquipo = (index: number) => {
-    setNewEquipos(newEquipos.filter((_, i) => i !== index));
-  };
-
-  const updateNewEquipo = (index: number, value: string) => {
-    const updated = [...newEquipos];
-    updated[index] = value;
-    setNewEquipos(updated);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
+  if (!isOpen) return null;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/')}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Crear Nuevo Torneo</h2>
+            <p className="mt-1 text-gray-600">
+              Selecciona el tipo de torneo que deseas crear
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Contenido */}
+        <div className="p-6">
+          {/* Selector de tipo de torneo */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Opción Liga */}
+            <div 
+              className="card cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-transparent hover:border-blue-200"
+              onClick={() => handleSelectTipo('liga')}
             >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Crear Nuevo Torneo</h1>
-              <p className="mt-2 text-gray-600">
-                Configura tu torneo de fútbol
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6 bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-md flex items-center">
-          <AlertCircle className="w-5 h-5 mr-2" />
-          {error}
-        </div>
-      )}
-
-      {/* Form */}
-      <div className="card">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Información básica */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="nombre" className="label">
-                Nombre del Torneo *
-              </label>
-              <input
-                id="nombre"
-                type="text"
-                required
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                className="input"
-                placeholder="Ej: Liga Española 2024"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="tipo" className="label">
-                Tipo de Torneo *
-              </label>
-              <select
-                id="tipo"
-                required
-                value={formData.tipo}
-                onChange={(e) => setFormData({ ...formData, tipo: e.target.value as 'liga' | 'eliminacion' })}
-                className="input"
-              >
-                <option value="liga">Liga (Todos contra todos)</option>
-                <option value="eliminacion">Eliminación Directa</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Información sobre el tipo de torneo */}
-          <div className={`p-4 rounded-lg ${
-            formData.tipo === 'liga' 
-              ? 'bg-blue-50 border border-blue-200' 
-              : 'bg-red-50 border border-red-200'
-          }`}>
-            <div className="flex items-start">
-              <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${
-                formData.tipo === 'liga' ? 'bg-blue-500' : 'bg-red-500'
-              }`}></div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-1">
-                  {formData.tipo === 'liga' ? 'Torneo de Liga' : 'Torneo de Eliminación Directa'}
-                </h4>
-                <p className="text-sm text-gray-600">
-                  {formData.tipo === 'liga' 
-                    ? 'Todos los equipos juegan entre sí. El campeón se determina por puntos acumulados.'
-                    : 'Los equipos compiten en rondas eliminatorias. El número de equipos debe ser una potencia de 2 (2, 4, 8, 16, etc.).'
-                  }
+              <div className="p-6">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Torneo de Liga</h3>
+                    <p className="text-sm text-gray-600">Todos contra todos</p>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 mb-4">
+                  Todos los equipos juegan entre sí. El campeón se determina por puntos acumulados al final de la temporada.
                 </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Users className="w-4 h-4 text-blue-600 mr-1" />
+                      <span className="text-xs text-gray-600">Equipos</span>
+                    </div>
+                    <span className="text-sm font-bold text-blue-600">2-20</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Target className="w-4 h-4 text-blue-600 mr-1" />
+                      <span className="text-xs text-gray-600">Formato</span>
+                    </div>
+                    <span className="text-sm font-bold text-blue-600">Ida/Vuelta</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Sistema de puntos personalizable
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Tabla de posiciones automática
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Calendario de partidos
+                  </div>
+                </div>
+
+                <button className="w-full mt-4 btn btn-primary">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Crear Liga
+                </button>
+              </div>
+            </div>
+
+            {/* Opción Eliminación */}
+            <div 
+              className="card cursor-pointer hover:shadow-lg transition-all duration-200 border-2 border-transparent hover:border-red-200"
+              onClick={() => handleSelectTipo('eliminacion')}
+            >
+              <div className="p-6">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                    <Zap className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Eliminación Directa</h3>
+                    <p className="text-sm text-gray-600">Rondas eliminatorias</p>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 mb-4">
+                  Los equipos compiten en rondas eliminatorias. El ganador de cada partido avanza a la siguiente ronda hasta llegar a la final.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Users className="w-4 h-4 text-red-600 mr-1" />
+                      <span className="text-xs text-gray-600">Equipos</span>
+                    </div>
+                    <span className="text-sm font-bold text-red-600">2, 4, 8, 16</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Target className="w-4 h-4 text-red-600 mr-1" />
+                      <span className="text-xs text-gray-600">Rondas</span>
+                    </div>
+                    <span className="text-sm font-bold text-red-600">Eliminatorias</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                    Cuadro de eliminación visual
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                    Avance automático de equipos
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                    Partido por tercer lugar
+                  </div>
+                </div>
+
+                <button className="w-full mt-4 btn btn-primary">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Crear Eliminación
+                </button>
               </div>
             </div>
           </div>
 
-                     {/* Crear equipos nuevos */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-                               <label className="label">
-                   Equipos del Torneo
-                 </label>
-                 <span className="text-sm text-gray-500">
-                   {newEquipos.filter(e => e.trim()).length} equipos
-                 </span>
-            </div>
-                         <div className="space-y-2">
-               {newEquipos.map((equipo, index) => (
-                 <div key={index} className="space-y-1">
-                   <div className="flex items-center space-x-2">
-                     <input
-                       type="text"
-                       value={equipo}
-                       onChange={(e) => updateNewEquipo(index, e.target.value)}
-                       className={`input flex-1 ${
-                         equipo.trim() && equipo.trim().length < 2 
-                           ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                           : ''
-                       }`}
-                       placeholder={`Nombre del equipo ${index + 1}`}
-                     />
-                     {newEquipos.length > 1 && (
-                       <button
-                         type="button"
-                         onClick={() => removeNewEquipo(index)}
-                         className="p-2 text-danger-600 hover:text-danger-700"
-                       >
-                         <X className="w-4 h-4" />
-                       </button>
-                     )}
-                   </div>
-                   {equipo.trim() && equipo.trim().length < 2 && (
-                     <p className="text-xs text-red-600 ml-1">
-                       El nombre debe tener al menos 2 caracteres
-                     </p>
-                   )}
-                 </div>
-               ))}
-                             <button
-                 type="button"
-                 onClick={addNewEquipo}
-                 className="btn btn-secondary text-sm"
-               >
-                 <Plus className="w-4 h-4 mr-2" />
-                 Agregar Otro Equipo
-               </button>
+          {/* Información adicional */}
+          <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">¿Cuál elegir?</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium text-blue-600 mb-2">Liga - Ideal para:</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Temporadas largas con muchos equipos</li>
+                  <li>• Determinar el mejor equipo por consistencia</li>
+                  <li>• Máxima cantidad de partidos</li>
+                  <li>• Tabla de posiciones detallada</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium text-red-600 mb-2">Eliminación - Ideal para:</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Torneos cortos y emocionantes</li>
+                  <li>• Competencias de copa</li>
+                  <li>• Menos equipos (máximo 16)</li>
+                  <li>• Resultados inmediatos</li>
+                </ul>
+              </div>
             </div>
           </div>
+        </div>
 
-                     {/* Resumen de equipos */}
-           <div className="bg-gray-50 p-4 rounded-lg">
-             <div className="flex items-center justify-between">
-               <span className="text-sm font-medium text-gray-700">Total de equipos:</span>
-               <span className="text-lg font-bold text-primary-600">
-                 {newEquipos.filter(e => e.trim()).length}
-               </span>
-             </div>
-             {formData.tipo === 'eliminacion' && (
-               <div className="mt-2 text-sm text-gray-600">
-                 {(() => {
-                   const total = newEquipos.filter(e => e.trim()).length;
-                   const isPowerOfTwo = (n: number) => n > 0 && (n & (n - 1)) === 0;
-                   if (total === 0) return 'Agrega equipos para continuar';
-                   if (isPowerOfTwo(total)) return '✅ Número válido para eliminación directa';
-                   return '⚠️ El número de equipos debe ser una potencia de 2 (2, 4, 8, 16, etc.)';
-                 })()}
-               </div>
-             )}
-           </div>
-
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              className="btn btn-secondary"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-            >
-              <Trophy className="w-4 h-4 mr-2" />
-              Crear Torneo
-            </button>
-          </div>
-        </form>
+        {/* Footer */}
+        <div className="flex justify-end p-6 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="btn btn-secondary"
+          >
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default CrearTorneo;
+export default CrearTorneoModal;
