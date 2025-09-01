@@ -28,8 +28,10 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
   useEffect(() => {
     if (!disableReload) {
       setLocalPartidos(partidos);
+      console.log('🔄 CuadroEliminacion - Partidos actualizados:', partidos);
+      console.log('🔄 CuadroEliminacion - Equipos disponibles:', equipos);
     }
-  }, [partidos, disableReload]);
+  }, [partidos, disableReload, equipos]);
 
 
 
@@ -282,6 +284,22 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     // Un partido está vacío si tiene ID negativo O si no tiene equipos asignados
     const esPartidoVacio = partido.id < 0 || !partido.equipoLocal || !partido.equipoVisitante;
     
+    // Debug: Verificar escudos de equipos
+    if (!esPartidoVacio && partido.equipoLocal) {
+      console.log(`🏆 Partido ${partido.id} - Equipo Local:`, {
+        nombre: partido.equipoLocal.nombre,
+        escudo_url: partido.equipoLocal.escudo_url,
+        tieneEscudo: !!partido.equipoLocal.escudo_url
+      });
+    }
+    if (!esPartidoVacio && partido.equipoVisitante) {
+      console.log(`🏆 Partido ${partido.id} - Equipo Visitante:`, {
+        nombre: partido.equipoVisitante.nombre,
+        escudo_url: partido.equipoVisitante.escudo_url,
+        tieneEscudo: !!partido.equipoVisitante.escudo_url
+      });
+    }
+    
     // Calcular si este partido está en el camino del equipo hovered
     const caminoEquipo = hoveredEquipo ? getCaminoEquipo(hoveredEquipo.partidoId, hoveredEquipo.equipoNombre) : [];
     const estaEnCamino = caminoEquipo.includes(partido.id);
@@ -360,17 +378,41 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
           <div className={`flex items-center justify-between p-3 border-b border-gray-200 ${
             esCampeonLocal ? 'bg-gradient-to-r from-yellow-100 to-yellow-200' : ''
           }`}>
-            <span 
-              className={`text-sm truncate flex-1 cursor-pointer transition-colors ${
-                esCampeonLocal 
-                  ? 'text-yellow-800 font-bold hover:text-yellow-900' 
-                  : 'text-gray-700 hover:text-blue-600'
-              }`}
-              onMouseEnter={() => setHoveredEquipo({partidoId: partido.id, equipoNombre: partido.equipoLocal?.nombre || ''})}
-              onMouseLeave={() => setHoveredEquipo(null)}
-            >
-              {esPartidoVacio ? 'TBD' : partido.equipoLocal?.nombre || 'TBD'}
-            </span>
+            <div className="flex items-center space-x-2 flex-1">
+              {!esPartidoVacio && partido.equipoLocal?.escudo_url ? (
+                <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src={partido.equipoLocal.escudo_url} 
+                    alt={`Escudo de ${partido.equipoLocal.nombre}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <span className="text-xs font-bold text-gray-600 hidden">
+                    {partido.equipoLocal.nombre.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              ) : !esPartidoVacio && partido.equipoLocal ? (
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                  <span className="text-xs font-bold text-white">
+                    {partido.equipoLocal.nombre.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              ) : null}
+              <span 
+                className={`text-sm truncate cursor-pointer transition-colors ${
+                  esCampeonLocal 
+                    ? 'text-yellow-800 font-bold hover:text-yellow-900' 
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
+                onMouseEnter={() => setHoveredEquipo({partidoId: partido.id, equipoNombre: partido.equipoLocal?.nombre || ''})}
+                onMouseLeave={() => setHoveredEquipo(null)}
+              >
+                {esPartidoVacio ? 'TBD' : partido.equipoLocal?.nombre || 'TBD'}
+              </span>
+            </div>
             <div className="flex items-center space-x-2">
               {isEditing ? (
                 <div className="flex items-center space-x-1">
@@ -410,17 +452,41 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
           <div className={`flex items-center justify-between p-3 ${
             esCampeonVisitante ? 'bg-gradient-to-r from-yellow-100 to-yellow-200' : ''
           }`}>
-            <span 
-              className={`text-sm truncate flex-1 cursor-pointer transition-colors ${
-                esCampeonVisitante 
-                  ? 'text-yellow-800 font-bold hover:text-yellow-900' 
-                  : 'text-gray-700 hover:text-blue-600'
-              }`}
-              onMouseEnter={() => setHoveredEquipo({partidoId: partido.id, equipoNombre: partido.equipoVisitante?.nombre || ''})}
-              onMouseLeave={() => setHoveredEquipo(null)}
-            >
-              {esPartidoVacio ? 'TBD' : partido.equipoVisitante?.nombre || 'TBD'}
-            </span>
+            <div className="flex items-center space-x-2 flex-1">
+              {!esPartidoVacio && partido.equipoVisitante?.escudo_url ? (
+                <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src={partido.equipoVisitante.escudo_url} 
+                    alt={`Escudo de ${partido.equipoVisitante.nombre}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <span className="text-xs font-bold text-gray-600 hidden">
+                    {partido.equipoVisitante.nombre.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              ) : !esPartidoVacio && partido.equipoVisitante ? (
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                  <span className="text-xs font-bold text-white">
+                    {partido.equipoVisitante.nombre.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              ) : null}
+              <span 
+                className={`text-sm truncate cursor-pointer transition-colors ${
+                  esCampeonVisitante 
+                    ? 'text-yellow-800 font-bold hover:text-yellow-900' 
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
+                onMouseEnter={() => setHoveredEquipo({partidoId: partido.id, equipoNombre: partido.equipoVisitante?.nombre || ''})}
+                onMouseLeave={() => setHoveredEquipo(null)}
+              >
+                {esPartidoVacio ? 'TBD' : partido.equipoVisitante?.nombre || 'TBD'}
+              </span>
+            </div>
             <div className="flex items-center space-x-2">
               {isEditing ? (
                 <div className="flex items-center space-x-1">

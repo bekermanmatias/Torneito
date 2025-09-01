@@ -32,6 +32,7 @@ app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/equipos', require('./routes/equipos'));
 app.use('/api/torneos', require('./routes/torneos'));
 app.use('/api/partidos', require('./routes/partidos'));
+app.use('/api/upload', require('./routes/upload'));
 
 // Middleware de manejo de errores
 app.use((err, req, res, next) => {

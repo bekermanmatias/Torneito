@@ -5,10 +5,12 @@ import Navigation from './components/Navigation';
 import LoginForm from './components/LoginForm';
 import Dashboard from './pages/Dashboard';
 import Torneos from './pages/Torneos';
+import Equipos from './pages/Equipos';
 import Perfil from './pages/Perfil';
 import CrearEliminacion from './pages/CrearEliminacion';
 import CrearLiga from './pages/CrearLiga';
 import DetalleTorneo from './pages/DetalleTorneo';
+import Test3D from './pages/Test3D';
 
 // Componente para rutas protegidas
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -71,6 +73,18 @@ const AppContent: React.FC = () => {
           }
         />
         
+        {/* Rutas de equipos */}
+        <Route
+          path="/equipos"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Equipos />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        
         {/* Rutas de creación de torneos */}
         <Route
           path="/crear-eliminacion"
@@ -111,6 +125,18 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <MainLayout>
                 <DetalleTorneo />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* Ruta de prueba 3D */}
+        <Route
+          path="/test-3d"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Test3D />
               </MainLayout>
             </ProtectedRoute>
           }

@@ -415,8 +415,13 @@ const crearTorneo = async (req, res) => {
 const actualizarTorneo = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, estado } = req.body;
+    const { nombre, estado, banner_url, banner_position } = req.body;
     const usuarioId = req.usuario.id;
+
+    console.log('🔍 Actualizando torneo...');
+    console.log('🔍 ID del torneo:', id);
+    console.log('🔍 Datos recibidos:', { nombre, estado, banner_url });
+    console.log('🔍 Usuario ID:', usuarioId);
 
     // Buscar el torneo
     const torneo = await Torneo.findOne({
@@ -431,10 +436,10 @@ const actualizarTorneo = async (req, res) => {
     }
 
     // Validar que al menos un campo se proporcione
-    if (!nombre && !estado) {
+    if (!nombre && !estado && !banner_url && !banner_position) {
       return res.status(400).json({
         error: '❌ Campos requeridos',
-        message: 'Debe proporcionar al menos nombre o estado'
+        message: 'Debe proporcionar al menos nombre, estado, banner_url o banner_position'
       });
     }
 
@@ -450,6 +455,8 @@ const actualizarTorneo = async (req, res) => {
     const datosActualizar = {};
     if (nombre) datosActualizar.nombre = nombre;
     if (estado) datosActualizar.estado = estado;
+    if (banner_url !== undefined) datosActualizar.banner_url = banner_url;
+    if (banner_position !== undefined) datosActualizar.banner_position = banner_position;
 
     await torneo.update(datosActualizar);
 

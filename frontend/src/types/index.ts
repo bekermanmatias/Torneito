@@ -46,6 +46,8 @@ export interface Torneo {
   nombre: string;
   tipo: TorneoTipo;
   estado: TorneoEstado;
+  banner_url?: string;
+  banner_position?: { x: number; y: number };
   usuarioId: number;
   equipos?: Equipo[];
   partidos?: Partido[];
@@ -72,6 +74,8 @@ export interface CreateTorneoData {
 export interface UpdateTorneoData {
   nombre?: string;
   estado?: TorneoEstado;
+  banner_url?: string;
+  banner_position?: { x: number; y: number };
 }
 
 // Tipos de partido

@@ -187,8 +187,19 @@ const TablaPosiciones: React.FC<TablaPosicionesProps> = ({ partidos, equipos }) 
                 <td className="px-6 py-5 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold text-lg">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg overflow-hidden">
+                        {stat.equipo.escudo_url ? (
+                          <img 
+                            src={stat.equipo.escudo_url} 
+                            alt={`Escudo de ${stat.equipo.nombre}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        <span className={`text-white font-bold text-lg ${stat.equipo.escudo_url ? 'hidden' : ''}`}>
                           {stat.equipo.nombre.charAt(0).toUpperCase()}
                         </span>
                       </div>

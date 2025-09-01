@@ -83,6 +83,29 @@ export const equipoService = {
   search: (query: string) => api.get(`/equipos/search?q=${query}`),
 };
 
+// Servicios de upload
+export const uploadService = {
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return api.post('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  uploadBanner: (file: File) => {
+    const formData = new FormData();
+    formData.append('banner', file);
+    return api.post('/upload/banner', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  deleteImage: (publicId: string) => api.delete(`/upload/image/${publicId}`),
+};
+
 // Servicios de torneos
 export const torneoService = {
   getAll: () => api.get('/torneos'),
@@ -92,7 +115,7 @@ export const torneoService = {
   create: (torneoData: { nombre: string; tipo: 'liga' | 'eliminacion'; equiposIds?: number[]; equiposNuevos?: string[] }) =>
     api.post('/torneos', torneoData),
   
-  update: (id: number, torneoData: { nombre?: string; estado?: string }) =>
+  update: (id: number, torneoData: { nombre?: string; estado?: string; banner_url?: string; banner_position?: { x: number; y: number } }) =>
     api.put(`/torneos/${id}`, torneoData),
   
   delete: (id: number) => api.delete(`/torneos/${id}`),

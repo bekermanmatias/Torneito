@@ -6,7 +6,8 @@ import {
   LogOut, 
   User,
   Menu,
-  X
+  X,
+  Users
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -37,6 +38,7 @@ const Navigation: React.FC = () => {
   const navItems = [
     { label: 'Inicio', path: '/', icon: Home },
     { label: 'Torneos', path: '/torneos', icon: Trophy },
+    { label: 'Equipos', path: '/equipos', icon: Users },
   ];
 
   const handleLogout = () => {

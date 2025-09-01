@@ -138,15 +138,6 @@ const LoginForm: React.FC = () => {
         </div>
 
                  <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-           {/* Mensaje de ayuda para desarrollo */}
-           {import.meta.env.DEV && (
-             <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md text-sm">
-               <strong>💡 Credenciales de prueba:</strong><br/>
-               Email: <code>test@example.com</code><br/>
-               Contraseña: <code>password123</code>
-             </div>
-           )}
-           
            {error && (
              <div className="bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-md">
                <strong>❌ Error:</strong> {error}

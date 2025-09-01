@@ -137,8 +137,19 @@ const CalendarioLiga: React.FC<CalendarioLigaProps> = ({ partidos, equipos, onUp
                   <div className="flex-1 flex items-center justify-center space-x-6">
                     {/* Equipo Local */}
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold text-lg">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg overflow-hidden">
+                        {partido.equipoLocal?.escudo_url ? (
+                          <img 
+                            src={partido.equipoLocal.escudo_url} 
+                            alt={`Escudo de ${partido.equipoLocal.nombre}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        <span className={`text-white font-bold text-lg ${partido.equipoLocal?.escudo_url ? 'hidden' : ''}`}>
                           {partido.equipoLocal?.nombre.charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -218,8 +229,19 @@ const CalendarioLiga: React.FC<CalendarioLigaProps> = ({ partidos, equipos, onUp
                         </div>
                         <div className="text-xs text-gray-500">Visitante</div>
                       </div>
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold text-lg">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg overflow-hidden">
+                        {partido.equipoVisitante?.escudo_url ? (
+                          <img 
+                            src={partido.equipoVisitante.escudo_url} 
+                            alt={`Escudo de ${partido.equipoVisitante.nombre}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        <span className={`text-white font-bold text-lg ${partido.equipoVisitante?.escudo_url ? 'hidden' : ''}`}>
                           {partido.equipoVisitante?.nombre.charAt(0).toUpperCase()}
                         </span>
                       </div>
