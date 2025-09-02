@@ -61,6 +61,8 @@ export interface CreateTorneoData {
   tipo: TorneoTipo;
   equiposIds?: number[];
   equiposNuevos?: string[];
+  banner_url?: string;
+  banner_color?: string;
   configuracion?: {
     formato?: 'ida' | 'ida-vuelta' | 'simple' | 'doble';
     puntosVictoria?: number;

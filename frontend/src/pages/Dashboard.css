@@ -596,13 +596,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   }
 }
 
-/* Estilos para las cards de torneos con banner */
+/* Estilos para las cards de torneos con diseño uniforme */
 .torneo-card {
   transition: all 0.3s ease;
   overflow: hidden;
-  aspect-ratio: 16/10; /* Hace las cards más rectangulares */
+  aspect-ratio: 16/10;
   display: flex;
   flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .torneo-card:hover {
@@ -610,106 +613,202 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
-.torneo-banner {
+/* Header uniforme para todas las cards */
+.torneo-header {
   position: relative;
-  height: 9rem; /* 144px - más alto para ser más rectangular */
+  height: 9rem;
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   overflow: hidden;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  color: white;
 }
 
-.torneo-banner img {
+/* Header con imagen (cuando hay banner) */
+.torneo-header.has-banner {
+  background: none;
+  position: relative;
+}
+
+.torneo-header.has-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  opacity: 0.8;
+  z-index: 1;
+}
+
+.torneo-header.has-banner img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  z-index: 0;
 }
 
-.torneo-card:hover .torneo-banner img {
-  transform: scale(1.05);
-}
-
-.torneo-banner-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1));
-  pointer-events: none;
-}
-
-/* Texto sobre el banner */
-.torneo-banner-text {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 1rem;
-  color: white;
+/* Contenido del header (siempre visible) */
+.torneo-header-content {
+  position: relative;
   z-index: 10;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
 }
 
-.torneo-banner-text h3 {
-  font-size: 1.25rem;
+.torneo-header-title {
+  font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
   line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.torneo-banner-text p {
-  font-size: 0.875rem;
+.torneo-header-subtitle {
+  font-size: 1rem;
   opacity: 0.9;
   margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
+}
+
+/* Tag de estado en el header */
+.torneo-header-status {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* Contenido de la card */
 .torneo-content {
   flex: 1;
-  padding: 1rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  background: white;
 }
 
-/* Fallback para cuando no hay banner */
-.torneo-card:not(:has(.torneo-banner)) {
-  border-top: 4px solid #3b82f6;
+/* Icono del tipo de torneo */
+.torneo-type-icon {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-/* Estilos para cards sin banner */
-.torneo-card:not(:has(.torneo-banner)) .torneo-content {
-  padding-top: 1.5rem;
+/* Información del torneo */
+.torneo-info {
+  margin-bottom: 1.5rem;
 }
 
-/* Mejoras para el texto del banner */
-.torneo-banner-text h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-  line-height: 1.2;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.torneo-banner-text p {
+.torneo-info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
   font-size: 0.875rem;
-  opacity: 0.95;
-  margin: 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-  font-weight: 500;
+  color: #6b7280;
+}
+
+.torneo-info-item:last-child {
+  margin-bottom: 0;
+}
+
+.torneo-info-label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+  color: #374151;
+}
+
+.torneo-info-value {
+  color: #6b7280;
+}
+
+/* Botón de acción */
+.torneo-action-button {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.torneo-action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: white;
+  text-decoration: none;
+}
+
+.torneo-action-button:active {
+  transform: translateY(0);
 }
 
 /* Responsive para móviles */
 @media (max-width: 768px) {
-  .torneo-banner {
-    height: 7rem; /* 112px */
+  .torneo-header {
+    height: 7rem;
+    padding: 0.75rem;
   }
   
-  .torneo-banner-text h3 {
-    font-size: 1.125rem;
+  .torneo-header-title {
+    font-size: 1.25rem;
   }
   
-  .torneo-banner-text p {
+  .torneo-header-subtitle {
+    font-size: 0.875rem;
+  }
+  
+  .torneo-content {
+    padding: 1rem;
+  }
+  
+  .torneo-action-button {
+    padding: 0.625rem 1.25rem;
     font-size: 0.8rem;
   }
+}
+
+/* Fallback para cuando no hay banner - mantener el estilo uniforme */
+.torneo-card:not(:has(.torneo-header.has-banner)) .torneo-header {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+/* Mantener compatibilidad con el sistema anterior */
+.torneo-banner {
+  display: none; /* Ocultar el banner anterior */
+}
+
+.torneo-banner-overlay {
+  display: none; /* Ocultar el overlay anterior */
+}
+
+.torneo-banner-text {
+  display: none; /* Ocultar el texto anterior del banner */
 }
 
 /* Partículas adicionales grandes y visibles */

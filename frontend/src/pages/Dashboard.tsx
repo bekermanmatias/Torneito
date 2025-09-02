@@ -5,7 +5,6 @@ import {
   ArrowRight,
   Users,
   Zap,
-  Target,
   Crown,
   Medal
 } from 'lucide-react';
@@ -13,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { torneoService } from '../services/api';
 import type { Torneo } from '../types';
 import { lazy, Suspense } from 'react';
+import TorneoCard from '../components/TorneoCard';
 import './Dashboard.css';
 
 // Lazy loading del componente 3D para mejor rendimiento
@@ -39,56 +39,6 @@ const Dashboard: React.FC = () => {
 
     loadDashboardData();
   }, []);
-
-  const getTorneoStatusColor = (estado: string) => {
-    switch (estado) {
-      case 'pendiente':
-        return 'bg-warning-100 text-warning-800';
-      case 'en_curso':
-        return 'bg-success-100 text-success-800';
-      case 'finalizado':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTorneoStatusText = (estado: string) => {
-    switch (estado) {
-      case 'pendiente':
-        return 'Pendiente';
-      case 'en_curso':
-        return 'En curso';
-      case 'finalizado':
-        return 'Finalizado';
-      default:
-        return estado;
-    }
-  };
-
-  // Función para obtener el icono específico del tipo de torneo
-  const getTorneoIcon = (tipo: string) => {
-    switch (tipo) {
-      case 'eliminacion':
-        return <Target className="w-6 h-6 mr-3 torneo-icon-eliminacion icon-hover" />;
-      case 'liga':
-        return <Crown className="w-6 h-6 mr-3 torneo-icon-liga icon-hover" />;
-      default:
-        return <Trophy className="w-6 h-6 mr-3 torneo-icon-default icon-hover" />;
-    }
-  };
-
-  // Función para obtener el icono grande del tipo de torneo
-  const getTorneoIconLarge = (tipo: string) => {
-    switch (tipo) {
-      case 'eliminacion':
-        return <Target className="w-10 h-10 torneo-icon-eliminacion icon-bounce" />;
-      case 'liga':
-        return <Crown className="w-10 h-10 torneo-icon-liga icon-bounce" />;
-      default:
-        return <Trophy className="w-10 h-10 torneo-icon-default icon-bounce" />;
-    }
-  };
 
   if (loading) {
     return (
@@ -161,7 +111,7 @@ const Dashboard: React.FC = () => {
                 to="/crear-eliminacion"
                 className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <Target className="w-6 h-6 mr-3" />
+                <Trophy className="w-6 h-6 mr-3" />
                 Crear Eliminación
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
@@ -192,7 +142,7 @@ const Dashboard: React.FC = () => {
           >
             <div className="relative z-10">
               <div className="mb-6 flex items-center justify-center w-20 h-20 bg-white/20 rounded-full">
-                <Target className="w-10 h-10" />
+                <Trophy className="w-10 h-10" />
               </div>
               <h3 className="text-3xl font-bold mb-4">Eliminación Directa</h3>
               <p className="text-red-100 mb-6 text-lg">
@@ -252,7 +202,7 @@ const Dashboard: React.FC = () => {
                   to="/crear-eliminacion"
                   className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                 >
-                  <Target className="w-4 h-4 mr-2" />
+                  <Trophy className="w-4 h-4 mr-2" />
                   Crear Eliminación
                 </Link>
                 <Link
@@ -265,82 +215,13 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {recentTorneos.map((torneo) => (
-                <div
+                <TorneoCard
                   key={torneo.id}
-                  className="group bg-gray-50 rounded-xl torneo-card hover:bg-gray-100"
-                >
-                  {/* Banner del torneo */}
-                  {torneo.banner_url ? (
-                    <div className="torneo-banner">
-                      <img
-                        src={torneo.banner_url}
-                        alt={`Banner de ${torneo.nombre}`}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                      <div className="torneo-banner-overlay"></div>
-                      
-                      {/* Texto sobre el banner */}
-                      <div className="torneo-banner-text">
-                        <h3>{torneo.nombre}</h3>
-                        <p>{torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    /* Header alternativo cuando no hay banner */
-                    <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          {getTorneoIcon(torneo.tipo)}
-                          <div className="ml-3">
-                            <h3 className="text-lg font-bold">{torneo.nombre}</h3>
-                            <p className="text-primary-100 text-sm font-medium">
-                              {torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}
-                            </p>
-                          </div>
-                        </div>
-                        <span className={`px-3 py-1 text-xs font-medium rounded-full bg-white/20 text-white`}>
-                          {getTorneoStatusText(torneo.estado)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="torneo-content">
-                    {/* Información del torneo */}
-                    <div className="mb-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          {getTorneoIcon(torneo.tipo)}
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTorneoStatusColor(torneo.estado)} ml-2`}>
-                            {getTorneoStatusText(torneo.estado)}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Información adicional */}
-                      <div className="space-y-1 text-sm text-gray-600">
-                        <p>Equipos: {torneo.equipos?.length || 0}</p>
-                        <p>Fecha: {new Date(torneo.createdAt).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    
-                    {/* Botón de ver detalles */}
-                    <div className="mt-auto">
-                      <Link
-                        to={`/torneo/${torneo.id}`}
-                        className="w-full text-center text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center justify-center group-hover:translate-x-1 transition-transform py-2 px-4 bg-primary-50 hover:bg-primary-100 rounded-lg"
-                      >
-                        Ver detalles
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                  torneo={torneo}
+                  variant="dashboard"
+                />
               ))}
             </div>
           )}
@@ -351,9 +232,9 @@ const Dashboard: React.FC = () => {
           <button
             onClick={() => {
               document.querySelector('.card')?.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'start'
-              });
+              behavior: 'smooth',
+              block: 'start'
+            });
             }}
             className="scroll-button inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-all duration-300 hover:scale-105"
           >

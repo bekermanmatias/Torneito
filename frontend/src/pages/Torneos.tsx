@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { torneoService } from '../services/api';
 import type { Torneo } from '../types';
+import TorneoCard from '../components/TorneoCard';
 
 const Torneos: React.FC = () => {
   const navigate = useNavigate();
@@ -38,41 +39,11 @@ const Torneos: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este torneo?')) {
-      return;
-    }
-
     try {
       await torneoService.delete(id);
       loadData();
     } catch (error: any) {
       setError(error.response?.data?.message || 'Error al eliminar el torneo');
-    }
-  };
-
-  const getTorneoStatusColor = (estado: string) => {
-    switch (estado) {
-      case 'pendiente':
-        return 'bg-warning-100 text-warning-800';
-      case 'en_curso':
-        return 'bg-success-100 text-success-800';
-      case 'finalizado':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getTorneoStatusText = (estado: string) => {
-    switch (estado) {
-      case 'pendiente':
-        return 'Pendiente';
-      case 'en_curso':
-        return 'En curso';
-      case 'finalizado':
-        return 'Finalizado';
-      default:
-        return estado;
     }
   };
 
@@ -147,96 +118,14 @@ const Torneos: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {torneos.map((torneo) => (
-            <div key={torneo.id} className="card torneo-card">
-              {/* Banner del torneo */}
-              {torneo.banner_url ? (
-                <div className="torneo-banner">
-                  <img
-                    src={torneo.banner_url}
-                    alt={`Banner de ${torneo.nombre}`}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                  <div className="torneo-banner-overlay"></div>
-                  
-                  {/* Texto sobre el banner */}
-                  <div className="torneo-banner-text">
-                    <h3>{torneo.nombre}</h3>
-                    <p>{torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}</p>
-                  </div>
-                </div>
-              ) : (
-                /* Header alternativo cuando no hay banner */
-                <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Trophy className="w-5 h-5 text-primary-600 mr-2 text-white" />
-                      <div className="ml-3">
-                        <h3 className="text-lg font-bold">{torneo.nombre}</h3>
-                        <p className="text-primary-100 text-sm font-medium">
-                          {torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}
-                        </p>
-                      </div>
-                    </div>
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full bg-white/20 text-white`}>
-                      {getTorneoStatusText(torneo.estado)}
-                    </span>
-                  </div>
-                </div>
-              )}
-              
-              <div className="torneo-content">
-                {/* Información del torneo */}
-                <div className="mb-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center">
-                      <Trophy className="w-5 h-5 text-primary-600 mr-2" />
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTorneoStatusColor(torneo.estado)} ml-2`}>
-                        {getTorneoStatusText(torneo.estado)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Información adicional */}
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>Equipos: {torneo.equipos?.length || 0}</p>
-                    <p>Fecha: {new Date(torneo.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  
-                  {/* Campeón si está finalizado */}
-                  {torneo.estado === 'finalizado' && torneo.campeon && (
-                    <div className="mt-2 p-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-md">
-                      <div className="flex items-center space-x-1">
-                        <Trophy className="w-4 h-4 text-yellow-800" />
-                        <span className="text-sm font-bold text-yellow-900">{torneo.campeon.nombre}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Botones de acción */}
-                <div className="flex items-center justify-between mt-auto">
-                  <button
-                    onClick={() => navigate(`/torneo/${torneo.id}`)}
-                    className="p-2 text-gray-400 hover:text-primary-600 transition-colors"
-                    title="Ver detalles"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(torneo.id)}
-                    className="p-2 text-gray-400 hover:text-danger-600 transition-colors"
-                    title="Eliminar"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <TorneoCard
+              key={torneo.id}
+              torneo={torneo}
+              variant="torneos"
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}

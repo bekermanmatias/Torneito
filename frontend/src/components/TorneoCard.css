@@ -1,0 +1,280 @@
+/* ===== ESTILOS PARA EL COMPONENTE TORNEO CARD ===== */
+
+/* Estilos básicos para la card */
+.torneo-card {
+  transition: all 0.3s ease;
+  overflow: hidden;
+  aspect-ratio: 16/10;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.torneo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Banner de fondo completo */
+.torneo-card.has-banner {
+  background: none;
+}
+
+.torneo-card.has-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--banner-url);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+/* Overlay negro difuminado para mejor legibilidad */
+.torneo-card.has-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1;
+}
+
+/* Contenido principal */
+.torneo-content {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: white;
+  position: relative;
+  z-index: 2;
+}
+
+/* Cuando hay banner, el contenido es transparente */
+.torneo-card.has-banner .torneo-content {
+  background: transparent;
+  color: white;
+}
+
+/* Header inline con el contenido */
+.torneo-header-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* Cuando hay banner, el borde es blanco */
+.torneo-card.has-banner .torneo-header-inline {
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.torneo-header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.torneo-header-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+/* Cuando hay banner, el título es blanco */
+.torneo-card.has-banner .torneo-header-title {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.torneo-header-subtitle {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Cuando hay banner, el subtítulo es blanco */
+.torneo-card.has-banner .torneo-header-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.torneo-header-status {
+  background: #3b82f6;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Botones compactos en la parte superior */
+.torneo-action-button-compact,
+.torneo-detail-button-compact,
+.torneo-delete-button-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.torneo-action-button-compact:hover,
+.torneo-detail-button-compact:hover,
+.torneo-delete-button-compact:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 1);
+}
+
+/* Estilos específicos para cada botón compacto */
+.torneo-action-button-compact {
+  color: #3b82f6;
+}
+
+.torneo-action-button-compact:hover {
+  color: #2563eb;
+}
+
+.torneo-detail-button-compact {
+  color: #3b82f6;
+}
+
+.torneo-detail-button-compact:hover {
+  color: #2563eb;
+}
+
+.torneo-delete-button-compact {
+  color: #dc2626;
+}
+
+.torneo-delete-button-compact:hover {
+  color: #b91c1c;
+}
+
+/* Cuando hay banner, los botones compactos tienen fondo semitransparente */
+.torneo-card.has-banner .torneo-action-button-compact,
+.torneo-card.has-banner .torneo-detail-button-compact,
+.torneo-card.has-banner .torneo-delete-button-compact {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+}
+
+.torneo-card.has-banner .torneo-action-button-compact:hover,
+.torneo-card.has-banner .torneo-detail-button-compact:hover,
+.torneo-card.has-banner .torneo-delete-button-compact:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Información del torneo */
+.torneo-info {
+  margin-bottom: 0.75rem;
+}
+
+.torneo-info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Cuando hay banner, el texto es blanco */
+.torneo-card.has-banner .torneo-info-item {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.torneo-info-item:last-child {
+  margin-bottom: 0;
+}
+
+.torneo-info-label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+  color: #374151;
+}
+
+/* Cuando hay banner, las etiquetas son blancas */
+.torneo-card.has-banner .torneo-info-label {
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.torneo-info-value {
+  color: #6b7280;
+}
+
+/* Cuando hay banner, los valores son blancos */
+.torneo-card.has-banner .torneo-info-value {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Estilos para el campeón */
+.torneo-campeon {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-radius: 6px;
+  border: 1px solid #d97706;
+}
+
+.torneo-campeon-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.torneo-campeon-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.torneo-campeon-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.torneo-campeon-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #92400e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .torneo-content {
+    padding: 0.75rem;
+  }
+  
+  .torneo-header-title {
+    font-size: 0.9rem;
+  }
+  
+  .torneo-header-subtitle {
+    font-size: 0.75rem;
+  }
+}
