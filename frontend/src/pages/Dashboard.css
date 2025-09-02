@@ -4,9 +4,10 @@
   width: 100%;
   overflow: hidden; /* Cambiar a overflow: hidden para evitar scroll duplicado */
   will-change: auto; /* Optimizar para cambios */
+  /* Padding superior para compensar el menú fijo */
   background: 
-    radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 90% 90%, rgba(124, 58, 237, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 90%, rgba(30, 64, 175, 0.05) 0%, transparent 50%),
     linear-gradient(135deg, 
       rgba(255, 255, 255, 0.95) 0%, 
       rgba(248, 250, 252, 0.98) 50%,
@@ -15,10 +16,11 @@
 
 /* Hero Section - Pantalla completa con efectos de luz */
 .hero-fullscreen {
-  height: 100vh;
+  height: calc(100vh - 4rem); /* 100vh - altura del menú (h-16 = 4rem) */
   width: 100%;
   position: relative;
   overflow: hidden;
+  margin-top: 4rem; /* Margen superior para compensar el menú fijo */
   background: 
     radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.25) 0%, transparent 50%),
@@ -58,17 +60,42 @@
   }
 }
 
-/* Balón 3D - Solo uno grande a la derecha */
-.ball-3d-right {
+/* Imagen de fondo profesional */
+.background-image-container {
   position: absolute;
-  top: 50%;
-  right: 15%;
-  transform: translateY(-50%);
-  width: 40%;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
-  z-index: 5;
-  opacity: 1;
-  filter: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  filter: brightness(1.1) contrast(1.2);
+}
+
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(16, 185, 129, 0.04) 0%, transparent 60%),
+    radial-gradient(circle at 60% 40%, rgba(236, 72, 153, 0.03) 0%, transparent 60%),
+    linear-gradient(135deg, 
+      rgba(59, 130, 246, 0.02) 0%, 
+      rgba(255, 255, 255, 0.6) 30%, 
+      rgba(255, 255, 255, 0.65) 50%,
+      rgba(124, 58, 237, 0.02) 70%, 
+      rgba(59, 130, 246, 0.02) 100%);
 }
 
 /* Contenido centrado verticalmente */
@@ -76,7 +103,7 @@
   height: 100%;
   display: flex;
   align-items: flex-start;
-  padding-top: 15vh;
+  padding-top: 10vh; /* Reducido de 15vh a 10vh para mejor centrado */
   position: relative;
   z-index: 20;
 }
@@ -134,36 +161,95 @@
   }
 }
 
+/* Botón de scroll hacia abajo en el borde inferior */
+.scroll-down-button {
+  animation: floatDown 2s ease-in-out infinite;
+  will-change: transform;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: absolute;
+  bottom: 2rem; /* Ajustado para estar más cerca del borde */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  min-width: 140px; /* Ancho mínimo para asegurar que todo quepa */
+  justify-content: center; /* Centrar el contenido horizontalmente */
+}
+
+.scroll-down-button:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+}
+
+/* Asegurar que el contenido del botón esté bien distribuido */
+.scroll-down-button span {
+  white-space: nowrap; /* Evitar que el texto se rompa en múltiples líneas */
+}
+
+.scroll-down-button svg {
+  flex-shrink: 0; /* Evitar que el ícono se comprima */
+}
+
+@keyframes floatDown {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 /* Mejoras para dispositivos móviles */
 @media (max-width: 768px) {
   .hero-fullscreen {
-    height: 100vh;
-    min-height: 100vh;
+    height: calc(100vh - 4rem);
+    min-height: calc(100vh - 4rem);
+    margin-top: 4rem;
   }
   
-  .ball-3d-right {
-    width: 50%;
-    right: 35%;
+  .background-image {
+    opacity: 0.5;
+  }
+  
+  .scroll-down-button {
+    bottom: 1rem;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.875rem;
+    min-width: 120px; /* Ancho mínimo más pequeño en móviles */
   }
 }
 
 /* Mejoras para tablets */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .ball-3d-right {
-    width: 45%;
-    right: 20%;
+  .hero-fullscreen {
+    height: calc(100vh - 4rem);
+    margin-top: 4rem;
+  }
+  
+  .background-image {
+    opacity: 0.55;
+  }
+  
+  .scroll-down-button {
+    bottom: 3rem;
+    min-width: 130px; /* Ancho mínimo para tablets */
   }
 }
 
 /* Mejoras para pantallas grandes */
 @media (min-width: 1025px) {
+  .hero-fullscreen {
+    height: calc(100vh - 4rem);
+    margin-top: 4rem;
+  }
+  
   .hero-content {
     padding-left: 2rem;
   }
   
-  .ball-3d-right {
-    width: 40%;
-    right: 10%;
+  .background-image {
+    opacity: 0.6;
   }
 }
 
@@ -176,6 +262,39 @@
 .hover-lift:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Mejoras para el texto sobre la imagen de fondo */
+.hero-content h1 {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: visible;
+  min-width: fit-content;
+}
+
+/* Asegurar que el nombre y la mano estén en el mismo renglón */
+.hero-content h1 .inline-flex {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  min-width: fit-content;
+  flex-wrap: nowrap;
+}
+
+.hero-content h1 .inline-flex span:last-child {
+  margin-left: 0.25rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.hero-content p {
+  color: #374151;
+}
+
+/* Botones con mejor contraste */
+.hero-content .inline-flex {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Gradientes mejorados con más colores y luces */
@@ -606,6 +725,85 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos para la sección informativa */
+.info-section {
+  background: linear-gradient(135deg, 
+    rgba(37, 99, 235, 0.02) 0%, 
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(30, 64, 175, 0.02) 100%);
+}
+
+/* Estilos para los pasos de la sección informativa */
+.info-section .group {
+  transition: all 0.3s ease;
+}
+
+.info-section .group:hover {
+  transform: translateY(-5px);
+}
+
+.info-section .group .w-24 {
+  transition: all 0.3s ease;
+}
+
+.info-section .group:hover .w-24 {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
+}
+
+/* Estilos para la sección de creación de torneos */
+.crear-torneos-section {
+  background: linear-gradient(135deg, 
+    rgba(37, 99, 235, 0.03) 0%, 
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(30, 64, 175, 0.03) 100%);
+}
+
+.info-step {
+  transition: all 0.3s ease;
+}
+
+.info-step:hover {
+  transform: translateY(-5px);
+}
+
+.info-step .step-number {
+  transition: all 0.3s ease;
+}
+
+.info-step:hover .step-number {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.feature-card:hover {
+  border-color: rgba(59, 130, 246, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Estilos para el footer */
+.footer-feature {
+  transition: all 0.3s ease;
+}
+
+.footer-feature:hover {
+  transform: translateY(-3px);
+}
+
+.footer-feature .icon-container {
+  transition: all 0.3s ease;
+}
+
+.footer-feature:hover .icon-container {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 .torneo-card:hover {

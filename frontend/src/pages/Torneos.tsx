@@ -56,7 +56,7 @@ const Torneos: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -93,42 +93,43 @@ const Torneos: React.FC = () => {
       )}
 
       {/* Tournaments Grid */}
-      {torneos.length === 0 ? (
-        <div className="text-center py-12">
-          <Trophy className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No hay torneos</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Comienza creando tu primer torneo.
-          </p>
-          <div className="mt-6 flex justify-center space-x-3">
-            <button
-              onClick={() => navigate('/crear-eliminacion')}
-              className="btn btn-secondary"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Eliminación Directa
-            </button>
-            <button
-              onClick={() => navigate('/crear-liga')}
-              className="btn btn-primary"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Liga
-            </button>
+      <div className="card">
+        {torneos.length === 0 ? (
+          <div className="text-center py-12">
+            <Trophy className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No hay torneos</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Comienza creando tu primer torneo.
+            </p>
+            <div className="mt-6 flex justify-center space-x-3">
+              <button
+                onClick={() => navigate('/crear-eliminacion')}
+                className="btn btn-secondary"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Eliminación Directa
+              </button>
+              <button
+                onClick={() => navigate('/crear-liga')}
+                className="btn btn-primary"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Liga
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {torneos.map((torneo) => (
-            <TorneoCard
-              key={torneo.id}
-              torneo={torneo}
-              variant="torneos"
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      )}
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {torneos.map((torneo) => (
+              <TorneoCard
+                key={torneo.id}
+                torneo={torneo}
+                variant="dashboard"
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

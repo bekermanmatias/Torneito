@@ -497,13 +497,11 @@ const eliminarTorneo = async (req, res) => {
     });
 
     if (partidosJugados > 0) {
-      return res.status(400).json({
-        error: '❌ No se puede eliminar',
-        message: 'No se puede eliminar un torneo que ya tiene partidos jugados'
-      });
+      console.log(`⚠️ Eliminando torneo ${id} con ${partidosJugados} partidos jugados`);
     }
 
     // Eliminar el torneo (cascada automática por foreign keys)
+    // Esto eliminará automáticamente: partidos, torneo_equipos, etc.
     await torneo.destroy();
 
     res.json({

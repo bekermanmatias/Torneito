@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, XCircle, AlertCircle, Play, CheckCircle, Edit2, Save, X, Upload, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trophy, XCircle, AlertCircle, Play, CheckCircle, Edit2, Save, X, Upload, Trash2, Check } from 'lucide-react';
 import { torneoService, partidoService, equipoService, uploadService } from '../services/api';
 import type { Torneo, Partido, Equipo } from '../types';
 import CuadroEliminacion from '../components/CuadroEliminacion';
@@ -371,6 +371,29 @@ const DetalleTorneo: React.FC = () => {
     }
   };
 
+  const handleDeleteTorneo = async () => {
+    if (!torneo) return;
+    
+    try {
+      setLoading(true);
+      setError('');
+      
+      console.log('🔍 Eliminando torneo...');
+      console.log('🔍 ID del torneo:', torneo.id);
+      
+      await torneoService.delete(torneo.id);
+      
+      console.log('✅ Torneo eliminado exitosamente');
+      
+      // Redirigir al dashboard
+      navigate('/');
+    } catch (error: any) {
+      console.error('❌ Error al eliminar el torneo:', error);
+      setError('Error al eliminar el torneo: ' + (error.response?.data?.message || 'Error desconocido'));
+      setLoading(false);
+    }
+  };
+
 
 
   if (loading) {
@@ -400,7 +423,7 @@ const DetalleTorneo: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-16">
       {/* Banner del Torneo - Ancho completo */}
       {torneo.banner_url ? (
         <div className="relative w-full h-64 md:h-80 lg:h-96 overflow-hidden">
@@ -513,7 +536,7 @@ const DetalleTorneo: React.FC = () => {
             {torneo.estado === 'finalizado' && torneo.campeon && (
               <div className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg shadow-lg">
                 <Trophy className="w-6 h-6 text-yellow-800" />
-                <span className="text-lg font-bold text-yellow-900">🏆 {torneo.campeon.nombre}</span>
+                <span className="text-lg font-bold text-yellow-900">{torneo.campeon.nombre}</span>
               </div>
             )}
           </div>
@@ -608,14 +631,35 @@ const DetalleTorneo: React.FC = () => {
       </div>
 
       {/* Acciones */}
-      <div className="flex justify-end space-x-3 mt-8">
-         <button
-           onClick={() => navigate('/')}
-           className="btn btn-secondary"
-         >
-           Volver al Dashboard
-         </button>
-       </div>
+      <div className="flex justify-between items-center mt-8">
+        {/* Botón de eliminar torneo */}
+        <button
+          onClick={() => {
+            if (window.confirm(
+              `¿Estás seguro de que quieres eliminar el torneo "${torneo.nombre}"?\n\n` +
+              `⚠️ Esta acción eliminará:\n` +
+              `• Todos los partidos del torneo\n` +
+              `• Todas las estadísticas\n` +
+              `• La configuración del torneo\n\n` +
+              `Esta acción NO se puede deshacer.`
+            )) {
+              handleDeleteTorneo();
+            }
+          }}
+          className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Eliminar Torneo
+        </button>
+
+        {/* Botón de volver */}
+        <button
+          onClick={() => navigate('/')}
+          className="btn btn-secondary"
+        >
+          Volver al Dashboard
+        </button>
+      </div>
 
       {/* Modal de Edición de Equipo */}
       {showEquipoModal && editingEquipoData && (
@@ -731,7 +775,7 @@ const DetalleTorneo: React.FC = () => {
       {/* Modal de Edición de Banner */}
       {editingBanner && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
                 Editar Banner del Torneo
@@ -754,8 +798,11 @@ const DetalleTorneo: React.FC = () => {
                 {editBannerUrl && (
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Arrastra la imagen para ajustar la posición
+                      Preview del banner (arrastra para ajustar la posición)
                     </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      El preview muestra cómo se verá el banner en el torneo. Arrastra la imagen para centrar la parte más importante.
+                    </p>
                     <div 
                       className="relative w-full h-32 bg-gray-100 rounded-lg overflow-hidden cursor-move"
                       onMouseDown={handleBannerDragStart}
@@ -786,29 +833,85 @@ const DetalleTorneo: React.FC = () => {
                 
 
 
-                {/* Upload de banner */}
-                <div className="flex items-center space-x-3">
-                  <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
-                    <Upload className="w-4 h-4 mr-2" />
-                    {uploadingBanner ? 'Subiendo...' : 'Subir Banner'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleBannerUpload}
-                      className="hidden"
-                      disabled={uploadingBanner}
-                    />
+                {/* Banners predeterminados */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Banners Predeterminados
                   </label>
-                  
-                  {editBannerUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setEditBannerUrl('')}
-                      className="inline-flex items-center px-3 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    {[1, 2, 3, 4].map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => {
+                          setEditBannerUrl(`/default-${num}.jpg`);
+                          setBannerPosition({ x: 50, y: 50 });
+                        }}
+                        className={`relative group overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                          editBannerUrl === `/default-${num}.jpg` 
+                            ? 'border-primary-500 ring-2 ring-primary-200' 
+                            : 'border-gray-200 hover:border-primary-300'
+                        }`}
+                      >
+                        <img 
+                          src={`/default-${num}.jpg`} 
+                          alt={`Banner predeterminado ${num}`}
+                          className="w-full h-20 object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                        {editBannerUrl === `/default-${num}.jpg` && (
+                          <div className="absolute inset-0 bg-primary-500 bg-opacity-20 flex items-center justify-center">
+                            <div className="w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center">
+                              <Check className="w-4 h-4 text-white" />
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Upload de banner personalizado */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    O sube tu propio banner
+                  </label>
+                  <div className="flex items-center space-x-3">
+                    <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploadingBanner ? 'Subiendo...' : 'Subir Banner'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerUpload}
+                        className="hidden"
+                        disabled={uploadingBanner}
+                      />
+                    </label>
+                    
+                    {editBannerUrl && editBannerUrl.startsWith('/default-') === false && (
+                      <button
+                        type="button"
+                        onClick={() => setEditBannerUrl('')}
+                        className="inline-flex items-center px-3 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Opción para quitar banner */}
+                <div className="mb-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditBannerUrl('');
+                      setBannerPosition({ x: 50, y: 50 });
+                    }}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Sin Banner
+                  </button>
                 </div>
                 
                 <p className="mt-1 text-xs text-gray-500">
