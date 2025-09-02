@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Copa/Trofeo -->
+  <path d="M8 12C8 8.68629 10.6863 6 14 6H18C21.3137 6 24 8.68629 24 12V14C24 17.3137 21.3137 20 18 20H14C10.6863 20 8 17.3137 8 14V12Z" fill="#2563EB"/>
+  
+  <!-- Base de la copa -->
+  <path d="M12 20V22C12 23.1046 12.8954 24 14 24H18C19.1046 24 20 23.1046 20 22V20" stroke="#2563EB" stroke-width="2" fill="none"/>
+  
+  <!-- Asas de la copa -->
+  <path d="M8 14C6.89543 14 6 13.1046 6 12C6 10.8954 6.89543 10 8 10" stroke="#2563EB" stroke-width="2" fill="none"/>
+  <path d="M24 14C25.1046 14 26 13.1046 26 12C26 10.8954 25.1046 10 24 10" stroke="#2563EB" stroke-width="2" fill="none"/>
+  
+  <!-- Estrella en la copa -->
+  <path d="M16 9L17.5 12H21L18.5 14L19.5 17.5L16 15.5L12.5 17.5L13.5 14L11 12H14.5L16 9Z" fill="white"/>
+</svg>

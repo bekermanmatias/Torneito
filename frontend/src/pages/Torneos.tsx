@@ -149,20 +149,65 @@ const Torneos: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {torneos.map((torneo) => (
-            <div key={torneo.id} className="card">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center mb-2">
-                    <Trophy className="w-5 h-5 text-primary-600 mr-2" />
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {torneo.nombre}
-                    </h3>
+            <div key={torneo.id} className="card torneo-card">
+              {/* Banner del torneo */}
+              {torneo.banner_url ? (
+                <div className="torneo-banner">
+                  <img
+                    src={torneo.banner_url}
+                    alt={`Banner de ${torneo.nombre}`}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                  <div className="torneo-banner-overlay"></div>
+                  
+                  {/* Texto sobre el banner */}
+                  <div className="torneo-banner-text">
+                    <h3>{torneo.nombre}</h3>
+                    <p>{torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}</p>
                   </div>
+                </div>
+              ) : (
+                /* Header alternativo cuando no hay banner */
+                <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Trophy className="w-5 h-5 text-primary-600 mr-2 text-white" />
+                      <div className="ml-3">
+                        <h3 className="text-lg font-bold">{torneo.nombre}</h3>
+                        <p className="text-primary-100 text-sm font-medium">
+                          {torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 text-xs font-medium rounded-full bg-white/20 text-white`}>
+                      {getTorneoStatusText(torneo.estado)}
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              <div className="torneo-content">
+                {/* Información del torneo */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <Trophy className="w-5 h-5 text-primary-600 mr-2" />
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTorneoStatusColor(torneo.estado)} ml-2`}>
+                        {getTorneoStatusText(torneo.estado)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Información adicional */}
                   <div className="space-y-1 text-sm text-gray-600">
-                    <p>Tipo: {torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}</p>
                     <p>Equipos: {torneo.equipos?.length || 0}</p>
-                    <p>Creado: {new Date(torneo.createdAt).toLocaleDateString()}</p>
+                    <p>Fecha: {new Date(torneo.createdAt).toLocaleDateString()}</p>
                   </div>
+                  
+                  {/* Campeón si está finalizado */}
                   {torneo.estado === 'finalizado' && torneo.campeon && (
                     <div className="mt-2 p-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-md">
                       <div className="flex items-center space-x-1">
@@ -171,13 +216,10 @@ const Torneos: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  <div className="mt-3">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTorneoStatusColor(torneo.estado)}`}>
-                      {getTorneoStatusText(torneo.estado)}
-                    </span>
-                  </div>
                 </div>
-                <div className="flex items-center space-x-2 ml-4">
+                
+                {/* Botones de acción */}
+                <div className="flex items-center justify-between mt-auto">
                   <button
                     onClick={() => navigate(`/torneo/${torneo.id}`)}
                     className="p-2 text-gray-400 hover:text-primary-600 transition-colors"

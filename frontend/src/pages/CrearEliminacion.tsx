@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Trophy, 
@@ -8,10 +8,12 @@ import {
   AlertCircle,
   ArrowLeft,
   Users,
-  Calendar
+  Calendar,
+  Search,
+  UserCheck
 } from 'lucide-react';
-import { torneoService } from '../services/api';
-import type { CreateTorneoData } from '../types';
+import { torneoService, equipoService } from '../services/api';
+import type { CreateTorneoData, Equipo } from '../types';
 
 const CrearEliminacion: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +23,10 @@ const CrearEliminacion: React.FC = () => {
     tipo: 'eliminacion'
   });
   const [newEquipos, setNewEquipos] = useState<string[]>(['', '']); // Mínimo 2 equipos
+  const [selectedEquipos, setSelectedEquipos] = useState<Equipo[]>([]); // Equipos existentes seleccionados
+  const [availableEquipos, setAvailableEquipos] = useState<Equipo[]>([]); // Todos los equipos disponibles
+  const [searchQuery, setSearchQuery] = useState(''); // Búsqueda de equipos
+  const [showEquiposModal, setShowEquiposModal] = useState(false); // Modal para seleccionar equipos
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +60,8 @@ const CrearEliminacion: React.FC = () => {
 
       const torneoData = {
         ...formData,
-        equiposNuevos
+        equiposNuevos,
+        equiposIds: selectedEquipos.map(e => e.id)
       };
 
       const response = await torneoService.create(torneoData);
@@ -85,7 +92,39 @@ const CrearEliminacion: React.FC = () => {
     setNewEquipos(updated);
   };
 
-  const equiposValidos = newEquipos.filter(equipo => equipo.trim()).length;
+  // Funciones para manejar equipos existentes
+  const toggleEquipoSelection = (equipo: Equipo) => {
+    const isSelected = selectedEquipos.some(e => e.id === equipo.id);
+    if (isSelected) {
+      setSelectedEquipos(selectedEquipos.filter(e => e.id !== equipo.id));
+    } else {
+      setSelectedEquipos([...selectedEquipos, equipo]);
+    }
+  };
+
+  const removeSelectedEquipo = (equipoId: number) => {
+    setSelectedEquipos(selectedEquipos.filter(e => e.id !== equipoId));
+  };
+
+  const filteredEquipos = availableEquipos.filter(equipo =>
+    equipo.nombre.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    !selectedEquipos.some(selected => selected.id === equipo.id)
+  );
+
+  // Cargar equipos disponibles al montar el componente
+  useEffect(() => {
+    const loadEquipos = async () => {
+      try {
+        const response = await equipoService.getAll();
+        setAvailableEquipos(response.data.data || []);
+      } catch (error) {
+        console.error('Error loading equipos:', error);
+      }
+    };
+    loadEquipos();
+  }, []);
+
+  const equiposValidos = newEquipos.filter(equipo => equipo.trim()).length + selectedEquipos.length;
   const esPotenciaDeDos = (n: number) => n > 0 && (n & (n - 1)) === 0;
 
   return (
@@ -182,14 +221,46 @@ const CrearEliminacion: React.FC = () => {
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={addEquipo}
-              className="mt-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Agregar Equipo
-            </button>
+            <div className="flex items-center space-x-3 mt-3">
+              <button
+                type="button"
+                onClick={addEquipo}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar Equipo
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setShowEquiposModal(true)}
+                className="inline-flex items-center px-3 py-2 border border-primary-300 shadow-sm text-sm leading-4 font-medium rounded-md text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                <UserCheck className="w-4 h-4 mr-2" />
+                Seleccionar Equipos Existentes
+              </button>
+            </div>
+
+            {/* Equipos existentes seleccionados */}
+            {selectedEquipos.length > 0 && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <h4 className="font-medium text-blue-900 mb-3">Equipos Existentes Seleccionados:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {selectedEquipos.map((equipo) => (
+                    <div key={equipo.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                      <span className="text-sm font-medium text-gray-700">{equipo.nombre}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSelectedEquipo(equipo.id)}
+                        className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Información sobre potencias de 2 */}
             <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
@@ -268,6 +339,90 @@ const CrearEliminacion: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Modal para seleccionar equipos existentes */}
+      {showEquiposModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">Seleccionar Equipos Existentes</h3>
+              <button
+                onClick={() => setShowEquiposModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              {/* Búsqueda */}
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Buscar equipos..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+              </div>
+
+              {/* Lista de equipos disponibles */}
+              <div className="max-h-96 overflow-y-auto">
+                {filteredEquipos.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    {searchQuery ? 'No se encontraron equipos con ese nombre' : 'No hay equipos disponibles'}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {filteredEquipos.map((equipo) => (
+                      <button
+                        key={equipo.id}
+                        onClick={() => toggleEquipoSelection(equipo)}
+                        className="flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                      >
+                        <span className="font-medium text-gray-700">{equipo.nombre}</span>
+                        <Plus className="w-4 h-4 text-blue-500" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Equipos seleccionados en el modal */}
+              {selectedEquipos.length > 0 && (
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                  <h4 className="font-medium text-blue-900 mb-3">Equipos Seleccionados ({selectedEquipos.length}):</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {selectedEquipos.map((equipo) => (
+                      <div key={equipo.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                        <span className="text-sm font-medium text-gray-700">{equipo.nombre}</span>
+                        <button
+                          onClick={() => removeSelectedEquipo(equipo.id)}
+                          className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-3 p-6 border-t bg-gray-50">
+              <button
+                onClick={() => setShowEquiposModal(false)}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

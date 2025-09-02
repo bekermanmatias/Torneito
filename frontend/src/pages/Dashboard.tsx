@@ -269,36 +269,76 @@ const Dashboard: React.FC = () => {
               {recentTorneos.map((torneo) => (
                 <div
                   key={torneo.id}
-                  className="group bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-all duration-300 hover:shadow-lg"
+                  className="group bg-gray-50 rounded-xl torneo-card hover:bg-gray-100"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center">
-                      {getTorneoIcon(torneo.tipo)}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
-                          {torneo.nombre}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}
-                        </p>
+                  {/* Banner del torneo */}
+                  {torneo.banner_url ? (
+                    <div className="torneo-banner">
+                      <img
+                        src={torneo.banner_url}
+                        alt={`Banner de ${torneo.nombre}`}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                      <div className="torneo-banner-overlay"></div>
+                      
+                      {/* Texto sobre el banner */}
+                      <div className="torneo-banner-text">
+                        <h3>{torneo.nombre}</h3>
+                        <p>{torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}</p>
                       </div>
                     </div>
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${getTorneoStatusColor(torneo.estado)}`}>
-                      {getTorneoStatusText(torneo.estado)}
-                    </span>
-                  </div>
+                  ) : (
+                    /* Header alternativo cuando no hay banner */
+                    <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          {getTorneoIcon(torneo.tipo)}
+                          <div className="ml-3">
+                            <h3 className="text-lg font-bold">{torneo.nombre}</h3>
+                            <p className="text-primary-100 text-sm font-medium">
+                              {torneo.tipo === 'liga' ? 'Liga' : 'Eliminación'}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`px-3 py-1 text-xs font-medium rounded-full bg-white/20 text-white`}>
+                          {getTorneoStatusText(torneo.estado)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                   
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
-                      Creado el {new Date(torneo.createdAt).toLocaleDateString()}
-                    </span>
-                    <Link
-                      to={`/torneo/${torneo.id}`}
-                      className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center group-hover:translate-x-1 transition-transform"
-                    >
-                      Ver detalles
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </Link>
+                  <div className="torneo-content">
+                    {/* Información del torneo */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center">
+                          {getTorneoIcon(torneo.tipo)}
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTorneoStatusColor(torneo.estado)} ml-2`}>
+                            {getTorneoStatusText(torneo.estado)}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Información adicional */}
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <p>Equipos: {torneo.equipos?.length || 0}</p>
+                        <p>Fecha: {new Date(torneo.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Botón de ver detalles */}
+                    <div className="mt-auto">
+                      <Link
+                        to={`/torneo/${torneo.id}`}
+                        className="w-full text-center text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center justify-center group-hover:translate-x-1 transition-transform py-2 px-4 bg-primary-50 hover:bg-primary-100 rounded-lg"
+                      >
+                        Ver detalles
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
