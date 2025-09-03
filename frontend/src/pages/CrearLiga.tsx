@@ -38,24 +38,29 @@ const CrearLiga: React.FC = () => {
       
       // Filtrar equipos válidos
       const equiposNuevos = newEquipos.filter(equipo => equipo.trim());
+      const totalEquipos = equiposNuevos.length + selectedEquipos.length;
 
       // Validar que se hayan agregado equipos
-      if (equiposNuevos.length === 0) {
+      if (totalEquipos === 0) {
         setError('Debes agregar al menos un equipo para el torneo');
         return;
       }
 
       // Validar número mínimo de equipos para liga
-      if (equiposNuevos.length < 2) {
+      if (totalEquipos < 2) {
         setError('Para un torneo de liga necesitas al menos 2 equipos');
         return;
       }
 
       const torneoData = {
         ...formData,
-        equiposNuevos,
-        equiposIds: selectedEquipos.map(e => e.id)
+        equiposNuevos: equiposNuevos.length > 0 ? equiposNuevos : [],
+        equiposIds: selectedEquipos.length > 0 ? selectedEquipos.map(e => e.id) : []
       };
+
+      console.log('Enviando datos del torneo:', torneoData);
+      console.log('selectedEquipos:', selectedEquipos);
+      console.log('equiposIds:', selectedEquipos.map(e => e.id));
 
       const response = await torneoService.create(torneoData);
       
@@ -89,9 +94,13 @@ const CrearLiga: React.FC = () => {
   const toggleEquipoSelection = (equipo: Equipo) => {
     const isSelected = selectedEquipos.some(e => e.id === equipo.id);
     if (isSelected) {
-      setSelectedEquipos(selectedEquipos.filter(e => e.id !== equipo.id));
+      const newSelected = selectedEquipos.filter(e => e.id !== equipo.id);
+      setSelectedEquipos(newSelected);
+      console.log('Equipo removido:', equipo.nombre, 'Nuevo selectedEquipos:', newSelected);
     } else {
-      setSelectedEquipos([...selectedEquipos, equipo]);
+      const newSelected = [...selectedEquipos, equipo];
+      setSelectedEquipos(newSelected);
+      console.log('Equipo agregado:', equipo.nombre, 'Nuevo selectedEquipos:', newSelected);
     }
   };
 
@@ -119,6 +128,15 @@ const CrearLiga: React.FC = () => {
 
   const equiposValidos = newEquipos.filter(equipo => equipo.trim()).length + selectedEquipos.length;
   const totalPartidos = equiposValidos > 1 ? (equiposValidos * (equiposValidos - 1)) / 2 : 0;
+
+  console.log('Debug equiposValidos:', {
+    newEquipos: newEquipos,
+    newEquiposFiltrados: newEquipos.filter(equipo => equipo.trim()),
+    newEquiposCount: newEquipos.filter(equipo => equipo.trim()).length,
+    selectedEquipos: selectedEquipos,
+    selectedEquiposCount: selectedEquipos.length,
+    equiposValidos: equiposValidos
+  });
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
@@ -168,7 +186,7 @@ const CrearLiga: React.FC = () => {
               value={formData.nombre}
               onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               className="input"
-              placeholder="Ej: Liga Nacional 2024"
+              placeholder="Ej: Liga 2025"
             />
           </div>
 
@@ -195,7 +213,6 @@ const CrearLiga: React.FC = () => {
                 <div key={index} className="flex items-center space-x-3">
                   <input
                     type="text"
-                    required
                     value={equipo}
                     onChange={(e) => updateEquipo(index, e.target.value)}
                     className="input flex-1"
@@ -316,6 +333,7 @@ const CrearLiga: React.FC = () => {
               type="submit"
               disabled={loading || !formData.nombre.trim() || equiposValidos < 2}
               className="btn btn-primary"
+              onClick={() => console.log('Botón clickeado - equiposValidos:', equiposValidos)}
             >
               {loading ? (
                 <div className="flex items-center">
@@ -369,14 +387,31 @@ const CrearLiga: React.FC = () => {
                     {searchQuery ? 'No se encontraron equipos con ese nombre' : 'No hay equipos disponibles'}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {filteredEquipos.map((equipo) => (
                       <button
                         key={equipo.id}
                         onClick={() => toggleEquipoSelection(equipo)}
                         className="flex items-center justify-between p-3 text-left border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
                       >
-                        <span className="font-medium text-gray-700">{equipo.nombre}</span>
+                        <div className="flex items-center space-x-3">
+                          {equipo.escudo_url ? (
+                            <img 
+                              src={equipo.escudo_url} 
+                              alt={`Escudo de ${equipo.nombre}`}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                              <Users className="w-4 h-4 text-gray-500" />
+                            </div>
+                          )}
+                          <span className="font-medium text-gray-700">{equipo.nombre}</span>
+                        </div>
                         <Plus className="w-4 h-4 text-blue-500" />
                       </button>
                     ))}
@@ -391,7 +426,24 @@ const CrearLiga: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {selectedEquipos.map((equipo) => (
                       <div key={equipo.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                        <span className="text-sm font-medium text-gray-700">{equipo.nombre}</span>
+                        <div className="flex items-center space-x-2">
+                          {equipo.escudo_url ? (
+                            <img 
+                              src={equipo.escudo_url} 
+                              alt={`Escudo de ${equipo.nombre}`}
+                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                              <Users className="w-3 h-3 text-gray-500" />
+                            </div>
+                          )}
+                          <span className="text-sm font-medium text-gray-700">{equipo.nombre}</span>
+                        </div>
                         <button
                           onClick={() => removeSelectedEquipo(equipo.id)}
                           className="p-1 text-gray-400 hover:text-red-600 transition-colors"

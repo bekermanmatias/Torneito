@@ -292,10 +292,10 @@ const Equipos: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEquipos.map((equipo) => (
             <div key={equipo.id} className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
+              <div className="p-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center overflow-hidden">
                       {equipo.escudo_url ? (
                         <img 
                           src={equipo.escudo_url} 
@@ -307,36 +307,29 @@ const Equipos: React.FC = () => {
                           }}
                         />
                       ) : null}
-                      <Users className={`w-6 h-6 text-primary-600 ${equipo.escudo_url ? 'hidden' : ''}`} />
+                      <Users className={`w-5 h-5 text-primary-600 ${equipo.escudo_url ? 'hidden' : ''}`} />
                     </div>
-                    <div className="ml-4">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                    <div className="ml-3">
+                      <h3 className="text-base font-semibold text-gray-900">
                         {equipo.nombre}
                       </h3>
-                      <p className="text-sm text-gray-500 flex items-center">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        Creado el {new Date(equipo.createdAt).toLocaleDateString('es-ES')}
+                      <p className="text-xs text-gray-500 flex items-center">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        {new Date(equipo.createdAt).toLocaleDateString('es-ES')}
                       </p>
                     </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Trophy className="w-4 h-4 mr-1" />
-                    <span>Disponible para torneos</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
                     <button
                       onClick={() => handleEdit(equipo)}
-                      className="p-2 text-gray-400 hover:text-primary-600 transition-colors duration-200 rounded-md hover:bg-primary-50"
+                      className="p-1.5 text-gray-400 hover:text-primary-600 transition-colors duration-200 rounded-md hover:bg-primary-50"
                       title="Editar equipo"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(equipo.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors duration-200 rounded-md hover:bg-red-50"
+                      className="p-1.5 text-gray-400 hover:text-red-600 transition-colors duration-200 rounded-md hover:bg-red-50"
                       title="Eliminar equipo"
                     >
                       <Trash2 className="w-4 h-4" />

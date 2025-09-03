@@ -323,7 +323,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Liga Española 2024\",\n  \"tipo\": \"liga\",\n  \"equiposIds\": [1, 2, 3, 4]\n}"
+							"raw": "{\n  \"nombre\": \"Liga 2025\",\n  \"tipo\": \"liga\",\n  \"equiposIds\": [1, 2, 3, 4]\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/torneos",
@@ -353,7 +353,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Copa Libertadores 2024\",\n  \"tipo\": \"eliminacion\",\n  \"equiposIds\": [1, 2, 3, 4]\n}"
+							"raw": "{\n  \"nombre\": \"Copa 2025\",\n  \"tipo\": \"eliminacion\",\n  \"equiposIds\": [1, 2, 3, 4]\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/torneos",
@@ -430,7 +430,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Liga Española 2024 - Actualizada\",\n  \"estado\": \"en_curso\"\n}"
+							"raw": "{\n  \"nombre\": \"Liga 2025 - Actualizada\",\n  \"estado\": \"en_curso\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/torneos/{{torneo_id}}",

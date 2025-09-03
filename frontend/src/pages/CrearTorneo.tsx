@@ -183,7 +183,7 @@ const CrearTorneo: React.FC = () => {
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Ej: Copa de Verano 2024"
+                placeholder="Ej: Copa 2025"
                 required
               />
             </div>
