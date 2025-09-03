@@ -100,20 +100,20 @@ const Dashboard: React.FC = () => {
         </div>
         
         {/* Contenido de la Hero Section - Centrado verticalmente */}
-        <div className="hero-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-left max-w-2xl lg:max-w-2xl">
-            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-3">
+        <div className="hero-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-start h-full">
+          <div className="text-left max-w-3xl lg:max-w-4xl -ml-8 lg:-ml-36">
+            <h1 className="text-6xl md:text-8xl font-bold text-gray-900 mb-3">
               ¡Bienvenido, 
-              </h1>
-              <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-4">
+            </h1>
+            <h1 className="text-6xl md:text-8xl font-bold text-gray-900 mb-4">
               {user?.nombre}! 👋
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-2xl md:text-3xl text-gray-600 mb-8 max-w-4xl">
               Gestiona tus torneos, rapido y profesional
             </p>
             
             {/* Botones de acción principales */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-start mb-12">
+            <div className="flex flex-col sm:flex-row gap-6 justify-start mb-12">
               <button
                 onClick={() => {
                   document.querySelector('.crear-torneos-section')?.scrollIntoView({ 
@@ -121,20 +121,20 @@ const Dashboard: React.FC = () => {
                     block: 'start'
                   });
                 }}
-                className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="group inline-flex items-center px-10 py-5 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <Trophy className="w-6 h-6 mr-3" />
+                <Trophy className="w-7 h-7 mr-3" />
                 Crear Torneo
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
               </button>
               
               <Link
                 to="/torneos"
-                className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-navy-600 to-navy-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="group inline-flex items-center px-10 py-5 bg-gradient-to-r from-navy-600 to-navy-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <Crown className="w-6 h-6 mr-3" />
+                <Crown className="w-7 h-7 mr-3" />
                 Mis Torneos
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
             
