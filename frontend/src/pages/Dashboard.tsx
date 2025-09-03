@@ -15,22 +15,30 @@ import { lazy, Suspense } from 'react';
 import TorneoCard from '../components/TorneoCard';
 import './Dashboard.css';
 
-// Componente de imagen de fondo profesional
-const BackgroundImage: React.FC = () => (
-  <div className="background-image-container">
-    <img 
-      src="/fondo.jpg" 
-      alt="Estadio de fútbol profesional" 
-      className="background-image"
+// Componente de video de fondo profesional
+const BackgroundVideo: React.FC = () => (
+  <div className="background-video-container">
+    <video 
+      autoPlay 
+      muted 
+      loop 
+      playsInline
+      className="background-video"
       onError={(e) => {
-        console.error('Error loading background image:', e);
-        const target = e.target as HTMLImageElement;
+        console.error('Error loading background video:', e);
+        const target = e.target as HTMLVideoElement;
         target.style.display = 'none';
       }}
-      onLoad={() => {
-        console.log('Background image loaded successfully');
+      onLoadStart={() => {
+        console.log('Background video loading started');
       }}
-    />
+      onCanPlay={() => {
+        console.log('Background video can play');
+      }}
+    >
+      <source src="/video.mp4" type="video/mp4" />
+      Tu navegador no soporta videos.
+    </video>
     <div className="background-overlay"></div>
   </div>
 );
@@ -69,8 +77,8 @@ const Dashboard: React.FC = () => {
     <div className="dashboard-fullscreen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Hero Section - Pantalla completa */}
       <section className="hero-fullscreen">
-        {/* Imagen de fondo profesional - Primero para que esté detrás de todo */}
-        <BackgroundImage />
+        {/* Video de fondo profesional - Primero para que esté detrás de todo */}
+        <BackgroundVideo />
         
         {/* Partículas flotantes para el fondo */}
         <div className="floating-particles">
@@ -105,7 +113,7 @@ const Dashboard: React.FC = () => {
             <h1 className="text-6xl md:text-8xl font-bold text-gray-900 mb-3">
               ¡Bienvenido, 
             </h1>
-            <h1 className="text-6xl md:text-8xl font-bold text-gray-900 mb-4">
+            <h1 className="text-6xl md:text-8xl font-bold text-gray-900 mb-1">
               {user?.nombre}! 👋
             </h1>
             <p className="text-2xl md:text-3xl text-gray-600 mb-8 max-w-4xl">

@@ -206,14 +206,19 @@ const Equipos: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Mis Equipos</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900">Mis Equipos</h1>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
+                {equipos.length} {equipos.length === 1 ? 'equipo' : 'equipos'}
+              </span>
+            </div>
             <p className="mt-2 text-gray-600">
               Gestiona los equipos que participarán en tus torneos
             </p>
           </div>
           <button
             onClick={openCreateModal}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
+            className="btn btn-primary"
           >
             <Plus className="w-4 h-4 mr-2" />
             Nuevo Equipo
@@ -254,30 +259,7 @@ const Equipos: React.FC = () => {
         </div>
       )}
 
-      {/* Stats */}
-      {equipos.length > 0 && (
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Users className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Total de Equipos
-                    </dt>
-                    <dd className="text-lg font-medium text-gray-900">
-                      {equipos.length}
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Teams Grid */}
       {filteredEquipos.length === 0 ? (
@@ -298,7 +280,7 @@ const Equipos: React.FC = () => {
             <div className="mt-6">
               <button
                 onClick={openCreateModal}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
+                className="btn btn-primary"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Crear mi primer equipo
