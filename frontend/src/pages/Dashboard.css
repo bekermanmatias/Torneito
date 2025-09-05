@@ -14,13 +14,15 @@
       rgba(255, 255, 255, 0.95) 100%);
 }
 
-/* Hero Section - Pantalla completa con efectos de luz */
+/* Hero Section - Pantalla completa con efectos de luz - MEJORADO */
 .hero-fullscreen {
-  height: calc(100vh - 4rem); /* 100vh - altura del menú (h-16 = 4rem) */
+  height: 100vh;
   width: 100%;
   position: relative;
   overflow: hidden;
-  margin-top: 4rem; /* Margen superior para compensar el menú fijo */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   background: 
     radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.25) 0%, transparent 50%),
@@ -98,14 +100,16 @@
       rgba(59, 130, 246, 0.02) 100%);
 }
 
-/* Contenido centrado verticalmente */
+/* Contenido alineado a la izquierda - MEJORADO */
 .hero-content {
   height: 100%;
+  width: 100%;
   display: flex;
-  align-items: flex-start;
-  padding-top: 10vh; /* Reducido de 15vh a 10vh para mejor centrado */
+  align-items: center;
+  justify-content: flex-start;
   position: relative;
   z-index: 20;
+  padding: 2rem 0;
 }
 
 /* Transición suave entre secciones con efectos de luz */

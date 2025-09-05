@@ -107,64 +107,65 @@ const Dashboard: React.FC = () => {
           <div className="particle"></div>
         </div>
         
-        {/* Contenido de la Hero Section - Centrado verticalmente */}
+        {/* Contenido de la Hero Section - Alineado a la izquierda con el navbar */}
         <div className="hero-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-start h-full">
-          <div className="text-left max-w-3xl lg:max-w-4xl -ml-8 lg:-ml-36">
-            <h1 className="text-6xl md:text-8xl font-bold text-gray-900 mb-3">
-              ¡Bienvenido, 
-            </h1>
-            <h1 className="text-6xl md:text-8xl font-bold text-gray-900 mb-1">
-              {user?.nombre}! 👋
-            </h1>
-            <p className="text-2xl md:text-3xl text-gray-600 mb-8 max-w-4xl">
-              Gestiona tus torneos, rapido y profesional
-            </p>
-            
-            {/* Botones de acción principales */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-start mb-12">
-              <button
-                onClick={() => {
-                  document.querySelector('.crear-torneos-section')?.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'start'
-                  });
-                }}
-                className="group inline-flex items-center px-10 py-5 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              >
-                <Trophy className="w-7 h-7 mr-3" />
-                Crear Torneo
-                <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
-              </button>
+          <div className="text-left max-w-2xl">
+            <div className="space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                ¡Bienvenido,
+              </h1>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                {user?.nombre}! 👋
+              </h1>
+              <p className="text-lg sm:text-xl md:text-2xl text-gray-600 leading-relaxed">
+                Gestiona tus torneos, rápido y profesional
+              </p>
               
-              <Link
-                to="/torneos"
-                className="group inline-flex items-center px-10 py-5 bg-gradient-to-r from-navy-600 to-navy-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              >
-                <Crown className="w-7 h-7 mr-3" />
-                Mis Torneos
-                <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              {/* Botones de acción principales */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-start mt-8">
+                <button
+                  onClick={() => {
+                    document.querySelector('.crear-torneos-section')?.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold text-sm sm:text-base rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <Trophy className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                  Crear Torneo
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </button>
+                
+                <Link
+                  to="/torneos"
+                  className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-navy-600 to-navy-700 text-white font-semibold text-sm sm:text-base rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                  Mis Torneos
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
             </div>
-            
-            {/* Botón de scroll hacia abajo */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
-              <button
-                onClick={() => {
-                  document.querySelector('.info-section')?.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'start'
-                  });
-                }}
-                className="scroll-down-button inline-flex items-center px-6 py-3 bg-white/90 backdrop-blur-sm text-primary-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-primary-100"
-              >
-                <span className="mr-2 font-medium">Ver más</span>
-                <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </button>
-            </div>
-
           </div>
+        </div>
+        
+        {/* Botón de scroll hacia abajo */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+          <button
+            onClick={() => {
+              document.querySelector('.info-section')?.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }}
+            className="scroll-down-button inline-flex items-center px-6 py-3 bg-white/90 backdrop-blur-sm text-primary-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-primary-100"
+          >
+            <span className="mr-2 font-medium">Ver más</span>
+            <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </button>
         </div>
       </section>
 
