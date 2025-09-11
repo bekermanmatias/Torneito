@@ -3,7 +3,9 @@ version: '3.8'
 services:
   # Base de datos PostgreSQL
   postgres:
-    image: postgres:15-alpine
+    build:
+      context: ./database
+      dockerfile: Dockerfile
     container_name: torneito_postgres
     restart: unless-stopped
     environment:
@@ -14,7 +16,42 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - torneito_network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: torneito_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: torneito_db
+      DB_USER: postgres
+      DB_PASSWORD: password
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - torneito_network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: torneito_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
     networks:
       - torneito_network
 
