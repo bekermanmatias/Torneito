@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Award, Edit2, Save, X, Plus, Minus, CheckCircle } from 'lucide-react';
 import type { Partido, Equipo } from '../types';
+import { toastService } from '../services/toast';
 
 interface CuadroEliminacionProps {
   partidos: Partido[];
   equipos: Equipo[];
-  onUpdateResult?: (partidoId: number, golesLocal: number, golesVisitante: number, isEditing?: boolean) => Promise<void>;
+  onUpdateResult?: (partidoId: number, golesLocal: number, golesVisitante: number, isEditing?: boolean, tienePenales?: boolean, penalesLocal?: number, penalesVisitante?: number) => Promise<void>;
   disableReload?: boolean; // Prop para evitar recarga de datos
   campeon?: Equipo; // Prop para el campeón del torneo
 }
@@ -20,9 +21,20 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
   const [editingPartido, setEditingPartido] = useState<number | null>(null);
   const [editGolesLocal, setEditGolesLocal] = useState<number>(0);
   const [editGolesVisitante, setEditGolesVisitante] = useState<number>(0);
+  const [editTienePenales, setEditTienePenales] = useState<boolean>(false);
+  const [editPenalesLocal, setEditPenalesLocal] = useState<number>(0);
+  const [editPenalesVisitante, setEditPenalesVisitante] = useState<number>(0);
   const [saving, setSaving] = useState(false);
   const [localPartidos, setLocalPartidos] = useState<Partido[]>(partidos);
   const [hoveredEquipo, setHoveredEquipo] = useState<{partidoId: number, equipoNombre: string} | null>(null);
+  
+  // Debug: Log para verificar las props recibidas
+  console.log('🎯 CuadroEliminacion props:', {
+    partidos: partidos.length,
+    equipos: equipos.length,
+    campeon: campeon ? `${campeon.nombre} (ID: ${campeon.id})` : 'No hay campeón',
+    disableReload
+  });
   
   // Actualizar partidos locales cuando cambien los props (solo si no está deshabilitado el reload)
   useEffect(() => {
@@ -84,6 +96,9 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
           fecha: new Date().toISOString(),
           estado: 'pendiente',
           ronda: i,
+          tienePenales: false,
+          penalesLocal: undefined,
+          penalesVisitante: undefined,
           equipoLocal: undefined,
           equipoVisitante: undefined,
           createdAt: new Date().toISOString(),
@@ -110,13 +125,25 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
       return null;
     }
     
+    // Verificar ganador en tiempo regular
     if (partido.golesLocal > partido.golesVisitante) {
       return partido.equipoLocal || null;
     } else if (partido.golesVisitante > partido.golesLocal) {
       return partido.equipoVisitante || null;
     }
     
-    return null; // Empate
+    // Si hay empate, verificar penales
+    if (partido.tienePenales && 
+        partido.penalesLocal !== null && partido.penalesLocal !== undefined &&
+        partido.penalesVisitante !== null && partido.penalesVisitante !== undefined) {
+      if (partido.penalesLocal > partido.penalesVisitante) {
+        return partido.equipoLocal || null;
+      } else if (partido.penalesVisitante > partido.penalesLocal) {
+        return partido.equipoVisitante || null;
+      }
+    }
+    
+    return null; // Empate (sin penales o empate en penales)
   };
 
   const getPerdedor = (partido: Partido): Equipo | null => {
@@ -126,13 +153,25 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
       return null;
     }
     
+    // Verificar perdedor en tiempo regular
     if (partido.golesLocal > partido.golesVisitante) {
       return partido.equipoVisitante || null;
     } else if (partido.golesVisitante > partido.golesLocal) {
       return partido.equipoLocal || null;
     }
     
-    return null; // Empate
+    // Si hay empate, verificar penales
+    if (partido.tienePenales && 
+        partido.penalesLocal !== null && partido.penalesLocal !== undefined &&
+        partido.penalesVisitante !== null && partido.penalesVisitante !== undefined) {
+      if (partido.penalesLocal > partido.penalesVisitante) {
+        return partido.equipoVisitante || null;
+      } else if (partido.penalesVisitante > partido.penalesLocal) {
+        return partido.equipoLocal || null;
+      }
+    }
+    
+    return null; // Empate (sin penales o empate en penales)
   };
 
   // Función para calcular el camino del equipo por nombre (hacia adelante y hacia atrás)
@@ -216,12 +255,18 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     // Si el partido ya tiene goles, usar esos valores, sino usar 0
     setEditGolesLocal(partido.golesLocal !== null && partido.golesLocal !== undefined ? partido.golesLocal : 0);
     setEditGolesVisitante(partido.golesVisitante !== null && partido.golesVisitante !== undefined ? partido.golesVisitante : 0);
+    setEditTienePenales(partido.tienePenales || false);
+    setEditPenalesLocal(partido.penalesLocal !== null && partido.penalesLocal !== undefined ? partido.penalesLocal : 0);
+    setEditPenalesVisitante(partido.penalesVisitante !== null && partido.penalesVisitante !== undefined ? partido.penalesVisitante : 0);
   };
 
   const handleCancel = () => {
     setEditingPartido(null);
     setEditGolesLocal(0);
     setEditGolesVisitante(0);
+    setEditTienePenales(false);
+    setEditPenalesLocal(0);
+    setEditPenalesVisitante(0);
   };
 
   const handleSave = async (partidoId: number) => {
@@ -230,6 +275,20 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     try {
       setSaving(true);
       console.log('💾 Guardando resultado para partido:', partidoId);
+      
+      // Validar que no se permiten empates sin penales en torneos de eliminación directa
+      if (editGolesLocal === editGolesVisitante && !editTienePenales) {
+        toastService.validation.invalid('En torneos de eliminación directa no se permiten empates sin penales. Debe haber un ganador.');
+        return;
+      }
+
+      // Validar que si hay empate en goles y se activaron penales, debe haber un ganador en penales
+      if (editGolesLocal === editGolesVisitante && editTienePenales) {
+        if (editPenalesLocal === editPenalesVisitante) {
+          toastService.validation.invalid('En los penales debe haber un ganador. No se permiten empates en penales.');
+          return;
+        }
+      }
       
       // Determinar si estamos editando un partido ya jugado
       const partido = localPartidos.find(p => p.id === partidoId);
@@ -243,13 +302,16 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
           ...partidosActualizados[partidoIndex],
           golesLocal: editGolesLocal,
           golesVisitante: editGolesVisitante,
+          tienePenales: editTienePenales,
+          penalesLocal: editTienePenales ? editPenalesLocal : undefined,
+          penalesVisitante: editTienePenales ? editPenalesVisitante : undefined,
           estado: 'jugado'
         };
         setLocalPartidos(partidosActualizados);
       }
       
       // Llamar al callback del padre pero no esperar a que recargue los datos
-      onUpdateResult(partidoId, editGolesLocal, editGolesVisitante, isEditing).catch(error => {
+      onUpdateResult(partidoId, editGolesLocal, editGolesVisitante, isEditing, editTienePenales, editPenalesLocal, editPenalesVisitante).catch(error => {
         console.error('Error en el backend:', error);
         // Si hay error, revertir el cambio local
         const partidoIndex = localPartidos.findIndex(p => p.id === partidoId);
@@ -259,6 +321,9 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
             ...partidosActualizados[partidoIndex],
             golesLocal: partido?.golesLocal || 0,
             golesVisitante: partido?.golesVisitante || 0,
+            tienePenales: partido?.tienePenales || false,
+            penalesLocal: partido?.penalesLocal || undefined,
+            penalesVisitante: partido?.penalesVisitante || undefined,
             estado: partido?.estado || 'pendiente'
           };
           setLocalPartidos(partidosActualizados);
@@ -306,9 +371,40 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     const esPartidoHovered = hoveredEquipo?.partidoId === partido.id;
     
     // Verificar si este es el partido de la final y si hay un campeón
-    const esFinal = partido.ronda === totalRondas;
-    const esCampeonLocal = esFinal && campeon && partido.equipoLocal?.id === campeon.id;
-    const esCampeonVisitante = esFinal && campeon && partido.equipoVisitante?.id === campeon.id;
+    // La final es el partido con la ronda más alta que esté jugado
+    const partidosJugados = localPartidos.filter(p => p.estado === 'jugado');
+    const rondaMasAlta = Math.max(...partidosJugados.map(p => p.ronda || 0));
+    const esFinal = partido.ronda === rondaMasAlta && partido.estado === 'jugado';
+    const esCampeonLocal = esFinal && campeon && partido.equipoLocal?.nombre === campeon.nombre;
+    const esCampeonVisitante = esFinal && campeon && partido.equipoVisitante?.nombre === campeon.nombre;
+    
+    // Debug: Log para verificar la detección del campeón
+    if (partido.estado === 'jugado') {
+      console.log('🔍 Partido jugado:', {
+        partidoId: partido.id,
+        ronda: partido.ronda,
+        rondaMasAlta,
+        esFinal,
+        campeon: campeon?.nombre || 'No hay campeón',
+        equipoLocal: partido.equipoLocal?.nombre,
+        equipoVisitante: partido.equipoVisitante?.nombre,
+        esCampeonLocal,
+        esCampeonVisitante
+      });
+    }
+    
+    if (esFinal && campeon) {
+      console.log('🏆 Final detectada:', {
+        partidoId: partido.id,
+        ronda: partido.ronda,
+        rondaMasAlta,
+        campeon: campeon.nombre,
+        equipoLocal: partido.equipoLocal?.nombre,
+        equipoVisitante: partido.equipoVisitante?.nombre,
+        esCampeonLocal,
+        esCampeonVisitante
+      });
+    }
     
           return (
         <div 
@@ -318,7 +414,11 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
         {/* Título del partido con botón */}
         <div className="flex items-center justify-between mb-2">
           <div className="text-sm font-medium text-gray-700">
-            Partido {numeroGlobal + 1}
+            {esFinal && campeon ? (
+              <span>Final</span>
+            ) : (
+              `Partido ${numeroGlobal + 1}`
+            )}
           </div>
           
           {/* Botón de acción a la derecha */}
@@ -427,7 +527,11 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
                     min="0"
                     value={editGolesLocal}
                     onChange={(e) => setEditGolesLocal(parseInt(e.target.value) || 0)}
-                    className="w-8 h-6 text-center border border-gray-300 rounded text-xs bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className={`w-8 h-6 text-center border rounded text-xs bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                      isEditing && editGolesLocal === editGolesVisitante && !editTienePenales
+                        ? 'border-red-300 bg-red-50'
+                        : 'border-gray-300'
+                    }`}
                   />
                   <button
                     onClick={() => setEditGolesLocal(editGolesLocal + 1)}
@@ -501,7 +605,11 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
                     min="0"
                     value={editGolesVisitante}
                     onChange={(e) => setEditGolesVisitante(parseInt(e.target.value) || 0)}
-                    className="w-8 h-6 text-center border border-gray-300 rounded text-xs bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className={`w-8 h-6 text-center border rounded text-xs bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                      isEditing && editGolesLocal === editGolesVisitante && !editTienePenales
+                        ? 'border-red-300 bg-red-50'
+                        : 'border-gray-300'
+                    }`}
                   />
                   <button
                     onClick={() => setEditGolesVisitante(editGolesVisitante + 1)}
@@ -521,6 +629,115 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
               )}
             </div>
           </div>
+          
+          {/* Sección de Penales - Solo mostrar si hay empate o si está editando */}
+          {(jugado && partido.golesLocal === partido.golesVisitante) || (isEditing && editGolesLocal === editGolesVisitante) ? (
+            <div className="border-t border-gray-200 bg-gray-50 p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-gray-600">Penales</span>
+                {isEditing && (
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={editTienePenales}
+                      onChange={(e) => {
+                        setEditTienePenales(e.target.checked);
+                        if (!e.target.checked) {
+                          setEditPenalesLocal(0);
+                          setEditPenalesVisitante(0);
+                        }
+                      }}
+                      className="w-3 h-3 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="text-xs text-gray-600">Hubo penales</span>
+                  </label>
+                )}
+              </div>
+              
+              {((jugado && partido.tienePenales) || (isEditing && editTienePenales)) && (
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-gray-600 w-16 truncate">
+                        {partido.equipoLocal?.nombre || 'Local'}
+                      </span>
+                      {isEditing ? (
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={() => setEditPenalesLocal(Math.max(0, editPenalesLocal - 1))}
+                            className="w-4 h-4 bg-gray-200 hover:bg-gray-300 rounded flex items-center justify-center transition-colors"
+                          >
+                            <Minus className="w-2 h-2 text-gray-600" />
+                          </button>
+                          <input
+                            type="number"
+                            min="0"
+                            value={editPenalesLocal}
+                            onChange={(e) => setEditPenalesLocal(parseInt(e.target.value) || 0)}
+                            className={`w-6 h-5 text-center border rounded text-xs bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                              isEditing && editGolesLocal === editGolesVisitante && editPenalesLocal === editPenalesVisitante
+                                ? 'border-red-300 bg-red-50'
+                                : 'border-gray-300'
+                            }`}
+                          />
+                          <button
+                            onClick={() => setEditPenalesLocal(editPenalesLocal + 1)}
+                            className="w-4 h-4 bg-gray-200 hover:bg-gray-300 rounded flex items-center justify-center transition-colors"
+                          >
+                            <Plus className="w-2 h-2 text-gray-600" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-medium text-gray-800 w-6 text-center">
+                          {partido.penalesLocal || 0}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <span className="text-xs text-gray-400">-</span>
+                    
+                    <div className="flex items-center space-x-2">
+                      {isEditing ? (
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={() => setEditPenalesVisitante(Math.max(0, editPenalesVisitante - 1))}
+                            className="w-4 h-4 bg-gray-200 hover:bg-gray-300 rounded flex items-center justify-center transition-colors"
+                          >
+                            <Minus className="w-2 h-2 text-gray-600" />
+                          </button>
+                          <input
+                            type="number"
+                            min="0"
+                            value={editPenalesVisitante}
+                            onChange={(e) => setEditPenalesVisitante(parseInt(e.target.value) || 0)}
+                            className={`w-6 h-5 text-center border rounded text-xs bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                              isEditing && editGolesLocal === editGolesVisitante && editPenalesLocal === editPenalesVisitante
+                                ? 'border-red-300 bg-red-50'
+                                : 'border-gray-300'
+                            }`}
+                          />
+                          <button
+                            onClick={() => setEditPenalesVisitante(editPenalesVisitante + 1)}
+                            className="w-4 h-4 bg-gray-200 hover:bg-gray-300 rounded flex items-center justify-center transition-colors"
+                          >
+                            <Plus className="w-2 h-2 text-gray-600" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-medium text-gray-800 w-6 text-center">
+                          {partido.penalesVisitante || 0}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-600 w-16 truncate text-right">
+                        {partido.equipoVisitante?.nombre || 'Visitante'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
         
 
@@ -585,7 +802,7 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
 
       {/* Leyenda del Cuadro de Eliminación */}
       <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4">
-        <div className="text-sm font-bold text-gray-800 mb-3">🏆 Leyenda del Cuadro de Eliminación</div>
+        <div className="text-sm font-bold text-gray-800 mb-3">Leyenda del Cuadro de Eliminación</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
           <div className="space-y-1">
             <div className="font-medium text-gray-700">Estados:</div>
@@ -596,6 +813,9 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
           <div className="space-y-1">
             <div className="font-medium text-gray-700">Funcionalidad:</div>
             <div>• Click en lápiz = Editar resultado</div>
+            <div>• Empates = Se pueden resolver con penales</div>
+            <div>• Sin penales = No se permiten empates</div>
+            <div>• Penales = Deben tener un ganador (no empates)</div>
             <div>• Resultados = Se actualizan automáticamente</div>
             <div>• Avance = Equipos pasan automáticamente</div>
           </div>

@@ -7,9 +7,11 @@ import {
   User,
   Menu,
   X,
-  Users
+  Users,
+  LogIn
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { toastService } from '../services/toast';
 
 const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
@@ -35,14 +37,17 @@ const Navigation: React.FC = () => {
     };
   }, [isUserMenuOpen]);
 
-  const navItems = [
+  const navItems = user ? [
     { label: 'Inicio', path: '/', icon: Home },
     { label: 'Torneos', path: '/torneos', icon: Trophy },
     { label: 'Equipos', path: '/equipos', icon: Users },
+  ] : [
+    { label: 'Inicio', path: '/', icon: Home },
   ];
 
   const handleLogout = () => {
     logout();
+    toastService.auth.logout();
     setIsMobileMenuOpen(false);
   };
 
@@ -136,39 +141,51 @@ const Navigation: React.FC = () => {
           <div className="flex items-center">
             {/* Usuario desktop */}
             <div className="hidden md:flex md:items-center md:space-x-4">
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900 transition-colors duration-200"
-                >
-                  <User className="h-4 w-4" />
-                  <span>{user?.nombre}</span>
-                </button>
-                
-                {/* Menú desplegable del usuario */}
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                    <Link
-                      to="/perfil"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                    >
-                      <User className="h-4 w-4 mr-3" />
-                      Mi Perfil
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        handleLogout();
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                    >
-                      <LogOut className="h-4 w-4 mr-3" />
-                      Cerrar sesión
-                    </button>
-                  </div>
-                )}
-              </div>
+              {user ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>{user?.nombre}</span>
+                  </button>
+                  
+                  {/* Menú desplegable del usuario */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                      <Link
+                        to="/perfil"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                      >
+                        <User className="h-4 w-4 mr-3" />
+                        Mi Perfil
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          handleLogout();
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                      >
+                        <LogOut className="h-4 w-4 mr-3" />
+                        Cerrar sesión
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <Link
+                    to="/login"
+                    className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Iniciar sesión</span>
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Botón de menú móvil */}
@@ -228,36 +245,51 @@ const Navigation: React.FC = () => {
             })}
             
             {/* Usuario en móvil */}
-            <div className="border-t border-gray-200 pt-4 pb-3">
-              <div className="flex items-center px-3">
-                <div className="flex-shrink-0">
-                  <User className="h-8 w-8 text-gray-400" />
+            {user ? (
+              <div className="border-t border-gray-200 pt-4 pb-3">
+                <div className="flex items-center px-3">
+                  <div className="flex-shrink-0">
+                    <User className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-base font-medium text-gray-800">{user?.nombre}</div>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">{user?.nombre}</div>
+                <div className="mt-3 px-2 space-y-1">
+                  <Link
+                    to="/perfil"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                  >
+                    <User className="h-5 w-5 mr-3" />
+                    Mi Perfil
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                  >
+                    <LogOut className="h-5 w-5 mr-3" />
+                    Cerrar sesión
+                  </button>
                 </div>
               </div>
-              <div className="mt-3 px-2 space-y-1">
-                <Link
-                  to="/perfil"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <User className="h-5 w-5 mr-3" />
-                  Mi Perfil
-                </Link>
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    handleLogout();
-                  }}
-                  className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <LogOut className="h-5 w-5 mr-3" />
-                  Cerrar sesión
-                </button>
+            ) : (
+              <div className="border-t border-gray-200 pt-4 pb-3">
+                <div className="px-2 space-y-1">
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                  >
+                    <LogIn className="h-5 w-5 mr-3" />
+                    Iniciar sesión
+                  </Link>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

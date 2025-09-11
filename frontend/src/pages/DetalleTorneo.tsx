@@ -6,6 +6,7 @@ import type { Torneo, Partido, Equipo } from '../types';
 import CuadroEliminacion from '../components/CuadroEliminacion';
 import TablaPosiciones from '../components/TablaPosiciones';
 import CalendarioLiga from '../components/CalendarioLiga';
+import ConfirmModal from '../components/ConfirmModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const DetalleTorneo: React.FC = () => {
@@ -31,6 +32,7 @@ const DetalleTorneo: React.FC = () => {
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [bannerPosition, setBannerPosition] = useState({ x: 50, y: 50 }); // Posición en porcentaje
   const [isDragging, setIsDragging] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -53,14 +55,59 @@ const DetalleTorneo: React.FC = () => {
         partidoService.getByTorneo(parseInt(id!))
       ]);
       
-      setTorneo(torneoRes.data.torneo);
-      setPartidos(partidosRes.data.partidos || []);
+      const torneoData = torneoRes.data.torneo;
+      const partidosData = partidosRes.data.partidos || [];
+      
+      // Calcular el campeón automáticamente si el torneo está finalizado y no tiene campeón
+      if (torneoData.estado === 'finalizado' && !torneoData.campeon && torneoData.tipo === 'eliminacion') {
+        const campeon = calcularCampeon(partidosData, torneoData.equipos || []);
+        if (campeon) {
+          torneoData.campeon = campeon;
+          console.log('🏆 Campeón calculado automáticamente:', campeon.nombre);
+        }
+      }
+      
+      setTorneo(torneoData);
+      setPartidos(partidosData);
     } catch (error: any) {
       console.error('Error loading torneo:', error);
       setError('Error al cargar el torneo');
     } finally {
       setLoading(false);
     }
+  };
+
+  const calcularCampeon = (partidos: Partido[], equipos: Equipo[]): Equipo | null => {
+    if (partidos.length === 0) return null;
+    
+    // Encontrar la ronda más alta
+    const rondaMasAlta = Math.max(...partidos.map(p => p.ronda || 0));
+    
+    // Buscar el partido de la final (ronda más alta)
+    const partidoFinal = partidos.find(p => p.ronda === rondaMasAlta && p.estado === 'jugado');
+    
+    if (!partidoFinal) return null;
+    
+    // Determinar el ganador de la final
+    let ganadorId: number | null = null;
+    
+    if (partidoFinal.golesLocal! > partidoFinal.golesVisitante!) {
+      ganadorId = partidoFinal.equipoLocalId;
+    } else if (partidoFinal.golesVisitante! > partidoFinal.golesLocal!) {
+      ganadorId = partidoFinal.equipoVisitanteId;
+    } else if (partidoFinal.tienePenales) {
+      // En caso de empate, verificar penales
+      if (partidoFinal.penalesLocal! > partidoFinal.penalesVisitante!) {
+        ganadorId = partidoFinal.equipoLocalId;
+      } else if (partidoFinal.penalesVisitante! > partidoFinal.penalesLocal!) {
+        ganadorId = partidoFinal.equipoVisitanteId;
+      }
+    }
+    
+    if (!ganadorId) return null;
+    
+    // Buscar el equipo ganador
+    return equipos.find(equipo => equipo.id === ganadorId) || null;
   };
 
   const getEstadoColor = (estado: string | undefined) => {
@@ -85,16 +132,28 @@ const DetalleTorneo: React.FC = () => {
     return tipo === 'eliminacion' ? 'text-red-600 bg-red-100' : 'text-blue-600 bg-blue-100';
   };
 
-  const handleUpdateResult = async (partidoId: number, golesLocal: number, golesVisitante: number, isEditing: boolean = false) => {
+  const handleUpdateResult = async (partidoId: number, golesLocal: number, golesVisitante: number, isEditing: boolean = false, tienePenales?: boolean, penalesLocal?: number, penalesVisitante?: number) => {
     try {
       setUpdatingResult(true);
       
+      // Preparar los datos del resultado
+      const resultData: any = { golesLocal, golesVisitante };
+      
+      // Agregar datos de penales si se especificaron
+      if (tienePenales !== undefined) {
+        resultData.tienePenales = tienePenales;
+        if (tienePenales) {
+          resultData.penalesLocal = penalesLocal || 0;
+          resultData.penalesVisitante = penalesVisitante || 0;
+        }
+      }
+      
       // Si estamos editando un partido ya jugado, usar actualizarResultado
       if (isEditing) {
-        await partidoService.updateResult(partidoId, { golesLocal, golesVisitante });
+        await partidoService.updateResult(partidoId, resultData);
       } else {
         // Si es un partido nuevo, usar registerResult
-        await partidoService.registerResult(partidoId, { golesLocal, golesVisitante });
+        await partidoService.registerResult(partidoId, resultData);
       }
       
       // Recargar los datos para mostrar las nuevas rondas generadas
@@ -634,18 +693,7 @@ const DetalleTorneo: React.FC = () => {
       <div className="flex justify-between items-center mt-8">
         {/* Botón de eliminar torneo */}
         <button
-          onClick={() => {
-            if (window.confirm(
-              `¿Estás seguro de que quieres eliminar el torneo "${torneo.nombre}"?\n\n` +
-              `⚠️ Esta acción eliminará:\n` +
-              `• Todos los partidos del torneo\n` +
-              `• Todas las estadísticas\n` +
-              `• La configuración del torneo\n\n` +
-              `Esta acción NO se puede deshacer.`
-            )) {
-              handleDeleteTorneo();
-            }
-          }}
+          onClick={() => setShowDeleteModal(true)}
           className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
         >
           <Trash2 className="w-4 h-4 mr-2" />
@@ -664,16 +712,16 @@ const DetalleTorneo: React.FC = () => {
       {/* Modal de Edición de Equipo */}
       {showEquipoModal && editingEquipoData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-100">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
                 Editar Equipo
               </h2>
               <button
                 onClick={handleCancelEditEquipo}
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -775,16 +823,16 @@ const DetalleTorneo: React.FC = () => {
       {/* Modal de Edición de Banner */}
       {editingBanner && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 shadow-xl">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 shadow-2xl border border-gray-100">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
                 Editar Banner del Torneo
               </h2>
               <button
                 onClick={handleCancelEditBanner}
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -950,6 +998,18 @@ const DetalleTorneo: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteTorneo}
+        title="Eliminar Torneo"
+        message={`¿Estás seguro de que quieres eliminar el torneo "${torneo?.nombre}"?\n\nEsta acción eliminará:\n• Todos los partidos del torneo\n• Todas las estadísticas\n• La configuración del torneo\n\nEsta acción NO se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+      />
       </div>
     </div>
   );

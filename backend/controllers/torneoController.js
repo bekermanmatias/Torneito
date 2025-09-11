@@ -277,8 +277,6 @@ const crearTorneo = async (req, res) => {
     const { nombre, tipo, equiposIds, equiposNuevos, configuracion } = req.body;
     const usuarioId = req.usuario.id;
 
-    console.log('Backend recibió:', { nombre, tipo, equiposIds, equiposNuevos, configuracion, usuarioId });
-
     // Validar campos requeridos
     if (!nombre || !tipo) {
       return res.status(400).json({
@@ -295,8 +293,6 @@ const crearTorneo = async (req, res) => {
       });
     }
 
-    console.log('Validación de equipos:', { equiposIds, equiposNuevos });
-
     // Validar tipo de torneo
     if (!['liga', 'eliminacion'].includes(tipo)) {
       return res.status(400).json({
@@ -310,14 +306,11 @@ const crearTorneo = async (req, res) => {
 
     // Agregar equipos existentes si se proporcionan
     if (equiposIds && Array.isArray(equiposIds) && equiposIds.length > 0) {
-      console.log('Buscando equipos existentes con IDs:', equiposIds);
       const equiposExistentes = await Equipo.findAll({
         where: {
           id: { [Op.in]: equiposIds }
         }
       });
-
-      console.log('Equipos existentes encontrados:', equiposExistentes.length);
 
       if (equiposExistentes.length !== equiposIds.length) {
         return res.status(400).json({
@@ -330,36 +323,26 @@ const crearTorneo = async (req, res) => {
 
     // Crear equipos nuevos si se proporcionan
     if (equiposNuevos && Array.isArray(equiposNuevos) && equiposNuevos.length > 0) {
-      // Filtrar solo equipos con nombres válidos
-      const equiposNuevosValidos = equiposNuevos.filter(nombreEquipo => nombreEquipo && nombreEquipo.trim());
-      
-      if (equiposNuevosValidos.length === 0 && (!equiposIds || equiposIds.length === 0)) {
-        return res.status(400).json({
-          error: '❌ Equipos requeridos',
-          message: 'Debe proporcionar al menos un equipo válido (existente o nuevo)'
-        });
-      }
-      
-      for (const nombreEquipo of equiposNuevosValidos) {
-        try {
-          const nuevoEquipo = await Equipo.create({
-            nombre: nombreEquipo.trim(),
-            usuarioId
-          });
-          equiposFinales.push(nuevoEquipo);
-        } catch (error) {
-          if (error.name === 'SequelizeValidationError') {
-            return res.status(400).json({
-              error: '❌ Nombre de equipo inválido',
-              message: `El equipo "${nombreEquipo}" no es válido: ${error.errors[0].message}`
+      for (const nombreEquipo of equiposNuevos) {
+        if (nombreEquipo && nombreEquipo.trim()) {
+          try {
+            const nuevoEquipo = await Equipo.create({
+              nombre: nombreEquipo.trim(),
+              usuarioId
             });
+            equiposFinales.push(nuevoEquipo);
+          } catch (error) {
+            if (error.name === 'SequelizeValidationError') {
+              return res.status(400).json({
+                error: '❌ Nombre de equipo inválido',
+                message: `El equipo "${nombreEquipo}" no es válido: ${error.errors[0].message}`
+              });
+            }
+            throw error;
           }
-          throw error;
         }
       }
     }
-
-    console.log('Equipos finales preparados:', equiposFinales.length, equiposFinales.map(e => e.nombre));
 
     // Validar número mínimo de equipos
     if (equiposFinales.length < 2) {

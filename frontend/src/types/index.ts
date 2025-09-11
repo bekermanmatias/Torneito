@@ -93,6 +93,9 @@ export interface Partido {
   fecha: string;
   estado: PartidoEstado;
   ronda?: number;
+  tienePenales: boolean;
+  penalesLocal?: number;
+  penalesVisitante?: number;
   equipoLocal?: Equipo;
   equipoVisitante?: Equipo;
   createdAt: string;
@@ -102,6 +105,9 @@ export interface Partido {
 export interface PartidoResult {
   golesLocal: number;
   golesVisitante: number;
+  tienePenales?: boolean;
+  penalesLocal?: number;
+  penalesVisitante?: number;
 }
 
 // Tipos de estadísticas

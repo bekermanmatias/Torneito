@@ -128,32 +128,6 @@ const registrarResultado = async (req, res) => {
       });
     }
 
-    // Validar empates en torneos de eliminación directa
-    if (golesLocal === golesVisitante) {
-      // Buscar el partido para verificar el tipo de torneo
-      const partidoTemp = await Partido.findOne({
-        where: { id },
-        include: [
-          {
-            model: Torneo,
-            as: 'torneo',
-            where: { usuarioId },
-            attributes: ['id', 'nombre', 'tipo', 'estado']
-          }
-        ]
-      });
-
-      if (partidoTemp && partidoTemp.torneo.tipo === 'eliminacion') {
-        // En torneos de eliminación, no se permiten empates sin penales
-        if (!tienePenales) {
-          return res.status(400).json({
-            error: '❌ Empate no permitido',
-            message: 'En torneos de eliminación directa no se permiten empates sin penales. Debe haber un ganador.'
-          });
-        }
-      }
-    }
-
     // Validar penales si se especifican
     if (tienePenales) {
       if (penalesLocal === undefined || penalesVisitante === undefined) {
@@ -175,14 +149,6 @@ const registrarResultado = async (req, res) => {
         return res.status(400).json({
           error: '❌ Penales inválidos',
           message: 'Los penales solo se pueden usar cuando hay empate en el tiempo regular'
-        });
-      }
-
-      // Verificar que no hay empate en penales
-      if (penalesLocal === penalesVisitante) {
-        return res.status(400).json({
-          error: '❌ Penales inválidos',
-          message: 'En los penales debe haber un ganador. No se permiten empates en penales'
         });
       }
     }
@@ -320,14 +286,6 @@ const actualizarResultado = async (req, res) => {
         return res.status(400).json({
           error: '❌ Penales inválidos',
           message: 'Los penales solo se pueden usar cuando hay empate en el tiempo regular'
-        });
-      }
-
-      // Verificar que no hay empate en penales
-      if (penalesLocal === penalesVisitante) {
-        return res.status(400).json({
-          error: '❌ Penales inválidos',
-          message: 'En los penales debe haber un ganador. No se permiten empates en penales'
         });
       }
     }

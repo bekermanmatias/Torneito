@@ -14,12 +14,15 @@ import {
   Image
 } from 'lucide-react';
 import { equipoService, uploadService } from '../services/api';
+import ConfirmModal from '../components/ConfirmModal';
 import type { Equipo, CreateEquipoData } from '../types';
 
 const Equipos: React.FC = () => {
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [equipoToDelete, setEquipoToDelete] = useState<Equipo | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingEquipo, setEditingEquipo] = useState<Equipo | null>(null);
   const [formData, setFormData] = useState<CreateEquipoData>({
@@ -162,14 +165,19 @@ const Equipos: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este equipo?')) {
-      return;
-    }
+  const handleDelete = (equipo: Equipo) => {
+    setEquipoToDelete(equipo);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!equipoToDelete) return;
 
     try {
-      await equipoService.delete(id);
+      await equipoService.delete(equipoToDelete.id);
       loadEquipos();
+      setShowDeleteModal(false);
+      setEquipoToDelete(null);
     } catch (error: any) {
       setError(error.response?.data?.message || 'Error al eliminar el equipo');
     }
@@ -328,7 +336,7 @@ const Equipos: React.FC = () => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(equipo.id)}
+                      onClick={() => handleDelete(equipo)}
                       className="p-1.5 text-gray-400 hover:text-red-600 transition-colors duration-200 rounded-md hover:bg-red-50"
                       title="Eliminar equipo"
                     >
@@ -345,16 +353,16 @@ const Equipos: React.FC = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-100">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
                 {editingEquipo ? 'Editar Equipo' : 'Nuevo Equipo'}
               </h2>
               <button
                 onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -461,6 +469,21 @@ const Equipos: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setEquipoToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Eliminar Equipo"
+        message={`¿Estás seguro de que quieres eliminar el equipo "${equipoToDelete?.nombre}"?\n\nEsta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+      />
     </div>
   );
 };

@@ -128,65 +128,6 @@ const registrarResultado = async (req, res) => {
       });
     }
 
-    // Validar empates en torneos de eliminación directa
-    if (golesLocal === golesVisitante) {
-      // Buscar el partido para verificar el tipo de torneo
-      const partidoTemp = await Partido.findOne({
-        where: { id },
-        include: [
-          {
-            model: Torneo,
-            as: 'torneo',
-            where: { usuarioId },
-            attributes: ['id', 'nombre', 'tipo', 'estado']
-          }
-        ]
-      });
-
-      if (partidoTemp && partidoTemp.torneo.tipo === 'eliminacion') {
-        // En torneos de eliminación, no se permiten empates sin penales
-        if (!tienePenales) {
-          return res.status(400).json({
-            error: '❌ Empate no permitido',
-            message: 'En torneos de eliminación directa no se permiten empates sin penales. Debe haber un ganador.'
-          });
-        }
-      }
-    }
-
-    // Validar penales si se especifican
-    if (tienePenales) {
-      if (penalesLocal === undefined || penalesVisitante === undefined) {
-        return res.status(400).json({
-          error: '❌ Penales requeridos',
-          message: 'Si el partido tuvo penales, debe especificar los goles en penales de ambos equipos'
-        });
-      }
-      
-      if (penalesLocal < 0 || penalesVisitante < 0) {
-        return res.status(400).json({
-          error: '❌ Penales inválidos',
-          message: 'Los goles en penales no pueden ser negativos'
-        });
-      }
-
-      // Verificar que hay empate en el tiempo regular
-      if (golesLocal !== golesVisitante) {
-        return res.status(400).json({
-          error: '❌ Penales inválidos',
-          message: 'Los penales solo se pueden usar cuando hay empate en el tiempo regular'
-        });
-      }
-
-      // Verificar que no hay empate en penales
-      if (penalesLocal === penalesVisitante) {
-        return res.status(400).json({
-          error: '❌ Penales inválidos',
-          message: 'En los penales debe haber un ganador. No se permiten empates en penales'
-        });
-      }
-    }
-
     // Buscar el partido
     const partido = await Partido.findOne({
       where: { id },
@@ -225,22 +166,12 @@ const registrarResultado = async (req, res) => {
       });
     }
 
-    // Preparar datos para actualizar
-    const datosActualizacion = {
+    // Actualizar el partido
+    await partido.update({
       golesLocal,
       golesVisitante,
-      estado: 'jugado',
-      tienePenales: tienePenales || false
-    };
-
-    // Agregar penales si se especificaron
-    if (tienePenales) {
-      datosActualizacion.penalesLocal = penalesLocal;
-      datosActualizacion.penalesVisitante = penalesVisitante;
-    }
-
-    // Actualizar el partido
-    await partido.update(datosActualizacion);
+      estado: 'jugado'
+    });
 
     // Si es un torneo de eliminación, verificar si necesitamos generar la siguiente ronda
     if (partido.torneo.tipo === 'eliminacion') {
@@ -280,7 +211,7 @@ const registrarResultado = async (req, res) => {
 const actualizarResultado = async (req, res) => {
   try {
     const { id } = req.params;
-    const { golesLocal, golesVisitante, tienePenales, penalesLocal, penalesVisitante } = req.body;
+    const { golesLocal, golesVisitante } = req.body;
     const usuarioId = req.usuario.id;
 
     // Validar campos requeridos
@@ -297,39 +228,6 @@ const actualizarResultado = async (req, res) => {
         error: '❌ Goles inválidos',
         message: 'Los goles no pueden ser negativos'
       });
-    }
-
-    // Validar penales si se especifican
-    if (tienePenales) {
-      if (penalesLocal === undefined || penalesVisitante === undefined) {
-        return res.status(400).json({
-          error: '❌ Penales requeridos',
-          message: 'Si el partido tuvo penales, debe especificar los goles en penales de ambos equipos'
-        });
-      }
-      
-      if (penalesLocal < 0 || penalesVisitante < 0) {
-        return res.status(400).json({
-          error: '❌ Penales inválidos',
-          message: 'Los goles en penales no pueden ser negativos'
-        });
-      }
-
-      // Verificar que hay empate en el tiempo regular
-      if (golesLocal !== golesVisitante) {
-        return res.status(400).json({
-          error: '❌ Penales inválidos',
-          message: 'Los penales solo se pueden usar cuando hay empate en el tiempo regular'
-        });
-      }
-
-      // Verificar que no hay empate en penales
-      if (penalesLocal === penalesVisitante) {
-        return res.status(400).json({
-          error: '❌ Penales inválidos',
-          message: 'En los penales debe haber un ganador. No se permiten empates en penales'
-        });
-      }
     }
 
     // Buscar el partido
@@ -368,25 +266,11 @@ const actualizarResultado = async (req, res) => {
       });
     }
 
-    // Preparar datos para actualizar
-    const datosActualizacion = {
-      golesLocal,
-      golesVisitante,
-      tienePenales: tienePenales || false
-    };
-
-    // Agregar penales si se especificaron
-    if (tienePenales) {
-      datosActualizacion.penalesLocal = penalesLocal;
-      datosActualizacion.penalesVisitante = penalesVisitante;
-    } else {
-      // Limpiar penales si no se especificaron
-      datosActualizacion.penalesLocal = null;
-      datosActualizacion.penalesVisitante = null;
-    }
-
     // Actualizar el partido
-    await partido.update(datosActualizacion);
+    await partido.update({
+      golesLocal,
+      golesVisitante
+    });
 
     // Obtener el partido actualizado con equipos
     const partidoActualizado = await Partido.findByPk(id, {
@@ -459,13 +343,10 @@ const eliminarResultado = async (req, res) => {
       });
     }
 
-    // Marcar como pendiente y limpiar goles y penales
+    // Marcar como pendiente y limpiar goles
     await partido.update({
       golesLocal: null,
       golesVisitante: null,
-      tienePenales: false,
-      penalesLocal: null,
-      penalesVisitante: null,
       estado: 'pendiente'
     });
 
@@ -571,33 +452,12 @@ const obtenerEstadisticasEquipo = async (req, res) => {
       golesFavor += golesEquipo;
       golesContra += golesRival;
 
-      // Determinar el resultado considerando penales
-      let resultado = 'empate';
       if (golesEquipo > golesRival) {
-        resultado = 'victoria';
-      } else if (golesEquipo < golesRival) {
-        resultado = 'derrota';
-      } else if (partido.tienePenales) {
-        // En caso de empate, verificar penales
-        const penalesEquipo = esLocal ? partido.penalesLocal : partido.penalesVisitante;
-        const penalesRival = esLocal ? partido.penalesVisitante : partido.penalesLocal;
-        
-        if (penalesEquipo > penalesRival) {
-          resultado = 'victoria';
-        } else if (penalesEquipo < penalesRival) {
-          resultado = 'derrota';
-        }
-      }
-
-      switch (resultado) {
-        case 'victoria':
-          partidosGanados++;
-          break;
-        case 'derrota':
-          partidosPerdidos++;
-          break;
-        default:
-          partidosEmpatados++;
+        partidosGanados++;
+      } else if (golesEquipo === golesRival) {
+        partidosEmpatados++;
+      } else {
+        partidosPerdidos++;
       }
     });
 
@@ -673,23 +533,13 @@ const generarSiguienteRonda = async (torneoId, rondaActual) => {
     const ganadores = [];
     for (const partido of partidosCompletados) {
       
-      // Determinar el ganador considerando penales
-      let ganador = null;
       if (partido.golesLocal > partido.golesVisitante) {
-        ganador = partido.equipoLocalId;
+        ganadores.push(partido.equipoLocalId);
       } else if (partido.golesVisitante > partido.golesLocal) {
-        ganador = partido.equipoVisitanteId;
-      } else if (partido.tienePenales) {
-        // En caso de empate, verificar penales
-        if (partido.penalesLocal > partido.penalesVisitante) {
-          ganador = partido.equipoLocalId;
-        } else if (partido.penalesVisitante > partido.penalesLocal) {
-          ganador = partido.equipoVisitanteId;
-        }
-      }
-      
-      if (ganador) {
-        ganadores.push(ganador);
+        ganadores.push(partido.equipoVisitanteId);
+      } else {
+        // En caso de empate, no avanzar ningún equipo
+        // Esto podría modificarse para implementar penales o tiempo extra
       }
     }
 
@@ -703,14 +553,13 @@ const generarSiguienteRonda = async (torneoId, rondaActual) => {
       return;
     }
 
-    // Si no hay ganadores (todos empates sin penales), no generar siguiente ronda
+    // Si no hay ganadores (todos empates), no generar siguiente ronda
     if (ganadores.length === 0) {
       return;
     }
 
     // Si hay un número impar de ganadores, el último pasa directamente
     if (ganadores.length % 2 !== 0) {
-      // El último equipo pasa directamente a la siguiente ronda
     }
 
     // Generar partidos para la siguiente ronda
@@ -738,6 +587,7 @@ const generarSiguienteRonda = async (torneoId, rondaActual) => {
     // Crear los partidos de la nueva ronda
     if (partidosNuevaRonda.length > 0) {
       await Partido.bulkCreate(partidosNuevaRonda);
+    } else {
     }
 
   } catch (error) {

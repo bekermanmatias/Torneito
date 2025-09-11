@@ -73,4 +73,124 @@
   .label {
     @apply block text-sm font-medium text-gray-700 mb-1;
   }
+
+  /* Sistema de partículas flotantes para LoginForm */
+  .floating-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: floatParticle 20s linear infinite;
+  }
+
+  /* Partículas azules */
+  .particle:nth-child(1) {
+    width: 6px;
+    height: 6px;
+    top: 15%;
+    left: 5%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.8) 0%, transparent 50%);
+    animation-delay: 0s;
+    animation-duration: 25s;
+  }
+
+  .particle:nth-child(2) {
+    width: 6px;
+    height: 6px;
+    top: 65%;
+    left: 85%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+    animation-delay: 3s;
+    animation-duration: 30s;
+  }
+
+  .particle:nth-child(3) {
+    width: 3px;
+    height: 3px;
+    top: 85%;
+    left: 15%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.5) 0%, transparent 70%);
+    animation-delay: 7s;
+    animation-duration: 35s;
+  }
+
+  .particle:nth-child(4) {
+    width: 5px;
+    height: 5px;
+    top: 25%;
+    left: 75%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+    animation-delay: 12s;
+    animation-duration: 28s;
+  }
+
+  /* Partículas púrpuras */
+  .particle:nth-child(5) {
+    width: 8px;
+    height: 8px;
+    top: 45%;
+    left: 10%;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.9) 0%, transparent 40%);
+    animation-delay: 2s;
+    animation-duration: 32s;
+  }
+
+  .particle:nth-child(6) {
+    width: 7px;
+    height: 7px;
+    top: 75%;
+    left: 90%;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, transparent 70%);
+    animation-delay: 8s;
+    animation-duration: 27s;
+  }
+
+  .particle:nth-child(7) {
+    width: 3px;
+    height: 3px;
+    top: 35%;
+    left: 80%;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.5) 0%, transparent 70%);
+    animation-delay: 15s;
+    animation-duration: 33s;
+  }
+
+  .particle:nth-child(8) {
+    width: 5px;
+    height: 5px;
+    top: 55%;
+    left: 20%;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, transparent 70%);
+    animation-delay: 5s;
+    animation-duration: 29s;
+  }
+
+  @keyframes floatParticle {
+    0% {
+      transform: translateY(0px) translateX(0px) scale(1) rotate(0deg);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.8;
+    }
+    50% {
+      transform: translateY(-50px) translateX(25px) scale(1.1) rotate(180deg);
+      opacity: 1;
+    }
+    90% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(-120px) translateX(60px) scale(0.3) rotate(360deg);
+      opacity: 0;
+    }
+  }
 }

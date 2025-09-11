@@ -41,7 +41,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
-      window.location.href = '/login';
+      // Solo redirigir si no estamos ya en la página de login y no estamos en el home
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

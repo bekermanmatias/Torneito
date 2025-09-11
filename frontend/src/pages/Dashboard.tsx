@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
                 ¡Bienvenido,
               </h1>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                {user?.nombre}! 👋
+                {user ? `${user.nombre}! 👋` : 'a Torneito! 🏆'}
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-gray-600 leading-relaxed">
                 Gestiona tus torneos, rápido y profesional
@@ -125,10 +125,14 @@ const Dashboard: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-start mt-8">
                 <button
                   onClick={() => {
-                    document.querySelector('.crear-torneos-section')?.scrollIntoView({ 
-                      behavior: 'smooth',
-                      block: 'start'
-                    });
+                    if (user) {
+                      document.querySelector('.crear-torneos-section')?.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                      });
+                    } else {
+                      window.location.href = '/login';
+                    }
                   }}
                   className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold text-sm sm:text-base rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
@@ -137,14 +141,20 @@ const Dashboard: React.FC = () => {
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
                 
-                <Link
-                  to="/torneos"
+                <button
+                  onClick={() => {
+                    if (user) {
+                      window.location.href = '/torneos';
+                    } else {
+                      window.location.href = '/login';
+                    }
+                  }}
                   className="group inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-navy-600 to-navy-700 text-white font-semibold text-sm sm:text-base rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <Crown className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
                   Mis Torneos
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -222,58 +232,91 @@ const Dashboard: React.FC = () => {
             
             {/* Botones de Crear Torneo - Versión expandida */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-          <Link
-            to="/crear-eliminacion"
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 to-red-600 p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-          >
-            <div className="relative z-10">
-              <div className="mb-6 flex items-center justify-center w-20 h-20 bg-white/20 rounded-full">
-                <Trophy className="w-10 h-10" />
-              </div>
-              <h3 className="text-3xl font-bold mb-4">Eliminación Directa</h3>
-              <p className="text-red-100 mb-6 text-lg">
-                Crea un torneo de eliminación directa donde los equipos compiten en rondas hasta llegar al campeón.
-              </p>
-              <div className="flex items-center text-red-100 group-hover:text-white transition-colors">
-                <span className="font-medium text-lg">Crear Torneo</span>
-                <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
-              </div>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </Link>
+              {/* Eliminación Directa */}
+              <button
+                onClick={() => {
+                  if (user) {
+                    window.location.href = '/crear-eliminacion';
+                  } else {
+                    window.location.href = '/login';
+                  }
+                }}
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 to-red-600 p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 min-h-[320px] flex flex-col"
+              >
+                <div className="relative z-10 flex flex-col h-full">
+                  {/* Icono y título */}
+                  <div className="text-center mb-6">
+                    <div className="mb-4 flex items-center justify-center w-20 h-20 bg-white/20 rounded-full mx-auto">
+                      <Trophy className="w-10 h-10" />
+                    </div>
+                    <h3 className="text-3xl font-bold mb-4">Eliminación Directa</h3>
+                  </div>
+                  
+                  {/* Descripción */}
+                  <div className="flex-1 flex items-center justify-center mb-6">
+                    <p className="text-red-100 text-lg text-center leading-relaxed">
+                      Crea un torneo de eliminación directa donde los equipos compiten en rondas hasta llegar al campeón.
+                    </p>
+                  </div>
+                  
+                  {/* Botón de acción */}
+                  <div className="flex items-center justify-center text-red-100 group-hover:text-white transition-colors">
+                    <span className="font-medium text-lg">Crear Torneo</span>
+                    <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
 
-          <Link
-            to="/crear-liga"
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-          >
-            <div className="relative z-10">
-              <div className="mb-6 flex items-center justify-center w-20 h-20 bg-white/20 rounded-full">
-                <Crown className="w-10 h-10" />
-              </div>
-              <h3 className="text-3xl font-bold mb-4">Liga</h3>
-              <p className="text-blue-100 mb-6 text-lg">
-                Crea un torneo de liga donde todos los equipos juegan entre sí y se determina el campeón por puntos.
-              </p>
-              <div className="flex items-center text-blue-100 group-hover:text-white transition-colors">
-                <span className="font-medium text-lg">Crear Torneo</span>
-                <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
-              </div>
+              {/* Liga */}
+              <button
+                onClick={() => {
+                  if (user) {
+                    window.location.href = '/crear-liga';
+                  } else {
+                    window.location.href = '/login';
+                  }
+                }}
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 min-h-[320px] flex flex-col"
+              >
+                <div className="relative z-10 flex flex-col h-full">
+                  {/* Icono y título */}
+                  <div className="text-center mb-6">
+                    <div className="mb-4 flex items-center justify-center w-20 h-20 bg-white/20 rounded-full mx-auto">
+                      <Crown className="w-10 h-10" />
+                    </div>
+                    <h3 className="text-3xl font-bold mb-4">Liga</h3>
+                  </div>
+                  
+                  {/* Descripción */}
+                  <div className="flex-1 flex items-center justify-center mb-6">
+                    <p className="text-blue-100 text-lg text-center leading-relaxed">
+                      Crea un torneo de liga donde todos los equipos juegan entre sí y se determina el campeón por puntos.
+                    </p>
+                  </div>
+                  
+                  {/* Botón de acción */}
+                  <div className="flex items-center justify-center text-blue-100 group-hover:text-white transition-colors">
+                    <span className="font-medium text-lg">Crear Torneo</span>
+                    <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </Link>
-        </div>
 
-        {/* Sección de Torneos Recientes */}
+        {/* Sección de Torneos Recientes - Solo para usuarios autenticados */}
+        {user && (
         <div className="card">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Torneos Recientes</h2>
-            <Link
-              to="/torneos"
+            <button
+              onClick={() => window.location.href = '/torneos'}
               className="text-primary-600 hover:text-primary-700 font-medium flex items-center"
             >
               Ver todos
               <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
+            </button>
           </div>
 
           {recentTorneos.length === 0 ? (
@@ -284,20 +327,20 @@ const Dashboard: React.FC = () => {
                 Comienza creando tu primer torneo usando los botones de arriba.
               </p>
               <div className="flex gap-4 justify-center">
-                <Link
-                  to="/crear-eliminacion"
+                <button
+                  onClick={() => window.location.href = '/crear-eliminacion'}
                   className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                 >
                   <Trophy className="w-4 h-4 mr-2" />
                   Crear Eliminación
-                </Link>
-                <Link
-                  to="/crear-liga"
+                </button>
+                <button
+                  onClick={() => window.location.href = '/crear-liga'}
                   className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                 >
                   <Crown className="w-4 h-4 mr-2" />
                   Crear Liga
-                </Link>
+                </button>
               </div>
             </div>
           ) : (
@@ -312,6 +355,7 @@ const Dashboard: React.FC = () => {
             </div>
           )}
         </div>
+        )}
                   </div>
         </section>
 

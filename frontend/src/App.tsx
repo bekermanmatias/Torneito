@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Navigation';
 import LoginForm from './components/LoginForm';
@@ -31,6 +32,40 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+// Componente para rutas que requieren autenticación pero redirigen a login
+const AuthRequiredRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Componente para manejar el estado de carga global
+const LoadingWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 // Layout principal con navegación
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -44,32 +79,31 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 // Componente principal de la aplicación
 const AppContent: React.FC = () => {
   return (
-    <Router>
-      <Routes>
+    <LoadingWrapper>
+      <Router>
+        <Routes>
         {/* Ruta pública */}
         <Route path="/login" element={<LoginForm />} />
         
-        {/* Rutas protegidas */}
+        {/* Home público */}
         <Route
           path="/"
           element={
-            <ProtectedRoute>
-              <MainLayout>
-                <Dashboard />
-              </MainLayout>
-            </ProtectedRoute>
+            <MainLayout>
+              <Dashboard />
+            </MainLayout>
           }
         />
         
-                {/* Rutas de torneos */}
+        {/* Rutas de torneos */}
         <Route
           path="/torneos"
           element={
-            <ProtectedRoute>
+            <AuthRequiredRoute>
               <MainLayout>
                 <Torneos />
               </MainLayout>
-            </ProtectedRoute>
+            </AuthRequiredRoute>
           }
         />
         
@@ -77,11 +111,11 @@ const AppContent: React.FC = () => {
         <Route
           path="/equipos"
           element={
-            <ProtectedRoute>
+            <AuthRequiredRoute>
               <MainLayout>
                 <Equipos />
               </MainLayout>
-            </ProtectedRoute>
+            </AuthRequiredRoute>
           }
         />
         
@@ -89,44 +123,44 @@ const AppContent: React.FC = () => {
         <Route
           path="/crear-eliminacion"
           element={
-            <ProtectedRoute>
+            <AuthRequiredRoute>
               <MainLayout>
                 <CrearEliminacion />
               </MainLayout>
-            </ProtectedRoute>
+            </AuthRequiredRoute>
           }
         />
         
         <Route
           path="/crear-liga"
           element={
-            <ProtectedRoute>
+            <AuthRequiredRoute>
               <MainLayout>
                 <CrearLiga />
               </MainLayout>
-            </ProtectedRoute>
+            </AuthRequiredRoute>
           }
         />
         
         <Route
           path="/perfil"
           element={
-            <ProtectedRoute>
+            <AuthRequiredRoute>
               <MainLayout>
                 <Perfil />
               </MainLayout>
-            </ProtectedRoute>
+            </AuthRequiredRoute>
           }
         />
         
         <Route
           path="/torneo/:id"
           element={
-            <ProtectedRoute>
+            <AuthRequiredRoute>
               <MainLayout>
                 <DetalleTorneo />
               </MainLayout>
-            </ProtectedRoute>
+            </AuthRequiredRoute>
           }
         />
         
@@ -134,18 +168,19 @@ const AppContent: React.FC = () => {
         <Route
           path="/test-3d"
           element={
-            <ProtectedRoute>
+            <AuthRequiredRoute>
               <MainLayout>
                 <Test3D />
               </MainLayout>
-            </ProtectedRoute>
+            </AuthRequiredRoute>
           }
         />
         
         {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </LoadingWrapper>
   );
 };
 
@@ -154,6 +189,46 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <AppContent />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#374151',
+            border: '1px solid #e5e7eb',
+            borderRadius: '12px',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            fontSize: '14px',
+            fontWeight: '500',
+            padding: '16px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+            style: {
+              border: '1px solid #10b981',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+            style: {
+              border: '1px solid #ef4444',
+            },
+          },
+          loading: {
+            iconTheme: {
+              primary: '#3b82f6',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </AuthProvider>
   );
 };

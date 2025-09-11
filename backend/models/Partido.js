@@ -58,6 +58,28 @@ const Partido = sequelize.define('Partido', {
     type: DataTypes.INTEGER,
     allowNull: true,
     comment: 'Para torneos de eliminación directa'
+  },
+  tienePenales: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    comment: 'Indica si el partido tuvo penales'
+  },
+  penalesLocal: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    validate: {
+      min: 0
+    },
+    comment: 'Goles en penales del equipo local'
+  },
+  penalesVisitante: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    validate: {
+      min: 0
+    },
+    comment: 'Goles en penales del equipo visitante'
   }
 }, {
   tableName: 'partidos',

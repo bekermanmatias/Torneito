@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Trophy, 
@@ -10,6 +10,7 @@ import {
   Calendar
 } from 'lucide-react';
 import type { Torneo } from '../types';
+import ConfirmModal from './ConfirmModal';
 import './TorneoCard.css';
 
 interface TorneoCardProps {
@@ -23,6 +24,7 @@ const TorneoCard: React.FC<TorneoCardProps> = ({
   variant = 'dashboard',
   onDelete 
 }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const getTorneoStatusText = (estado: string) => {
     switch (estado) {
       case 'pendiente':
@@ -70,9 +72,14 @@ const TorneoCard: React.FC<TorneoCardProps> = ({
   };
 
   const handleDelete = () => {
-    if (onDelete && window.confirm('¿Estás seguro de que quieres eliminar este torneo?')) {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (onDelete) {
       onDelete(torneo.id);
     }
+    setShowDeleteModal(false);
   };
 
   // Estilos inline para la imagen de fondo
@@ -175,6 +182,18 @@ const TorneoCard: React.FC<TorneoCardProps> = ({
         
 
       </div>
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Eliminar Torneo"
+        message={`¿Estás seguro de que quieres eliminar el torneo "${torneo.nombre}"?\n\nEsta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+      />
     </div>
   );
 };
