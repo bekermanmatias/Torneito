@@ -20,7 +20,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): T => {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: number;
   return ((...args: any[]) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(this, args), delay);
@@ -68,7 +68,7 @@ export const preloadResource = (href: string, as: string) => {
 
 // Optimizar resize events
 export const optimizeResize = (callback: () => void) => {
-  let resizeTimeout: NodeJS.Timeout;
+  let resizeTimeout: number;
   
   return () => {
     clearTimeout(resizeTimeout);

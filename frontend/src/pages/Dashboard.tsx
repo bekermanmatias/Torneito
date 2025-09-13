@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { 
   Trophy, 
   ArrowRight,
-  Users,
   Zap,
-  Crown,
-  Medal
+  Crown
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { torneoService } from '../services/api';
 import type { Torneo } from '../types';
-import { lazy, Suspense } from 'react';
+// import { lazy, Suspense } from 'react';
 import TorneoCard from '../components/TorneoCard';
 import './Dashboard.css';
 

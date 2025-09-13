@@ -1,0 +1,11 @@
+# Dockerfile para Nginx Proxy Inverso
+FROM nginx:alpine
+
+# Copiar configuración personalizada de nginx
+COPY nginx-proxy.conf /etc/nginx/nginx.conf
+
+# Exponer puerto 80
+EXPOSE 80
+
+# Comando para iniciar nginx
+CMD ["nginx", "-g", "daemon off;"]

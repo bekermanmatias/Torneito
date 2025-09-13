@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { torneoService } from '../services/api';
 import { equipoService } from '../services/api';
-import { uploadService } from '../services/api';
+// import { uploadService } from '../services/api';
 import type { Equipo } from '../types';
 
 interface FormData {
@@ -34,8 +34,8 @@ const CrearTorneo: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [nuevoEquipo, setNuevoEquipo] = useState('');
-  const [bannerFile, setBannerFile] = useState<File | null>(null);
-  const [uploadingBanner, setUploadingBanner] = useState(false);
+  // const [bannerFile, setBannerFile] = useState<File | null>(null);
+  // const [uploadingBanner, setUploadingBanner] = useState(false);
 
   React.useEffect(() => {
     loadEquipos();
@@ -107,42 +107,42 @@ const CrearTorneo: React.FC = () => {
     }));
   };
 
-  const handleBannerUpload = async (file: File) => {
-    setBannerFile(file);
-    setUploadingBanner(true);
-    setError('');
+  // const handleBannerUpload = async (file: File) => {
+  //   setBannerFile(file);
+  //   setUploadingBanner(true);
+  //   setError('');
 
-    try {
-      const response = await uploadService.uploadBanner(file);
-      setFormData(prev => ({
-        ...prev,
-        banner_url: response.data.url,
-        banner_color: undefined // Limpiar color si se sube imagen
-      }));
-    } catch (error: any) {
-      setError('Error al subir el banner: ' + (error.response?.data?.message || 'Error desconocido'));
-    } finally {
-      setUploadingBanner(false);
-    }
-  };
+  //   try {
+  //     const response = await uploadService.uploadBanner(file);
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       banner_url: response.data.url,
+  //       banner_color: undefined // Limpiar color si se sube imagen
+  //     }));
+  //   } catch (error: any) {
+  //     setError('Error al subir el banner: ' + (error.response?.data?.message || 'Error desconocido'));
+  //   } finally {
+  //     setUploadingBanner(false);
+  //   }
+  // };
 
-  const handleColorSelect = (color: string) => {
-    setFormData(prev => ({
-      ...prev,
-      banner_color: color,
-      banner_url: undefined // Limpiar URL si se selecciona color
-    }));
-    setBannerFile(null);
-  };
+  // const handleColorSelect = (color: string) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     banner_color: color,
+  //     banner_url: undefined // Limpiar URL si se selecciona color
+  //   }));
+  //   setBannerFile(null);
+  // };
 
-  const removeBanner = () => {
-    setFormData(prev => ({
-      ...prev,
-      banner_url: undefined,
-      banner_color: undefined
-    }));
-    setBannerFile(null);
-  };
+  // const removeBanner = () => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     banner_url: undefined,
+  //     banner_color: undefined
+  //   }));
+  //   setBannerFile(null);
+  // };
 
   const getEquiposSeleccionados = () => {
     const equiposExistentes = equipos.filter(e => formData.equiposIds.includes(e.id));

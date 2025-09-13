@@ -3,11 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Trophy, 
   Plus, 
-  Users, 
-  Calendar,
-  Edit, 
-  Trash2, 
-  Eye,
   Search
 } from 'lucide-react';
 import { torneoService } from '../services/api';
@@ -53,14 +48,14 @@ const Torneos: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      await torneoService.delete(id);
-      loadData();
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Error al eliminar el torneo');
-    }
-  };
+  // const handleDelete = async (id: number) => {
+  //   try {
+  //     await torneoService.delete(id);
+  //     loadData();
+  //   } catch (error: any) {
+  //     setError(error.response?.data?.message || 'Error al eliminar el torneo');
+  //   }
+  // };
 
   const handleSearch = () => {
     if (searchTerm.trim() === '') {

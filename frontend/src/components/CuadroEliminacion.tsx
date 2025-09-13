@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Award, Edit2, Save, X, Plus, Minus, CheckCircle } from 'lucide-react';
+import { Trophy, Edit2, Save, X, Plus, Minus, CheckCircle } from 'lucide-react';
 import type { Partido, Equipo } from '../types';
 import { toastService } from '../services/toast';
 
@@ -118,61 +118,61 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
   
   const rondas = organizarRondas();
 
-  const getGanador = (partido: Partido): Equipo | null => {
-    if (partido.estado !== 'jugado' || 
-        partido.golesLocal === null || partido.golesLocal === undefined || 
-        partido.golesVisitante === null || partido.golesVisitante === undefined) {
-      return null;
-    }
+  // const getGanador = (partido: Partido): Equipo | null => {
+  //   if (partido.estado !== 'jugado' || 
+  //       partido.golesLocal === null || partido.golesLocal === undefined || 
+  //       partido.golesVisitante === null || partido.golesVisitante === undefined) {
+  //     return null;
+  //   }
     
-    // Verificar ganador en tiempo regular
-    if (partido.golesLocal > partido.golesVisitante) {
-      return partido.equipoLocal || null;
-    } else if (partido.golesVisitante > partido.golesLocal) {
-      return partido.equipoVisitante || null;
-    }
+  //   // Verificar ganador en tiempo regular
+  //   if (partido.golesLocal > partido.golesVisitante) {
+  //     return partido.equipoLocal || null;
+  //   } else if (partido.golesVisitante > partido.golesLocal) {
+  //     return partido.equipoVisitante || null;
+  //   }
     
-    // Si hay empate, verificar penales
-    if (partido.tienePenales && 
-        partido.penalesLocal !== null && partido.penalesLocal !== undefined &&
-        partido.penalesVisitante !== null && partido.penalesVisitante !== undefined) {
-      if (partido.penalesLocal > partido.penalesVisitante) {
-        return partido.equipoLocal || null;
-      } else if (partido.penalesVisitante > partido.penalesLocal) {
-        return partido.equipoVisitante || null;
-      }
-    }
+  //   // Si hay empate, verificar penales
+  //   if (partido.tienePenales && 
+  //       partido.penalesLocal !== null && partido.penalesLocal !== undefined &&
+  //       partido.penalesVisitante !== null && partido.penalesVisitante !== undefined) {
+  //     if (partido.penalesLocal > partido.penalesVisitante) {
+  //       return partido.equipoLocal || null;
+  //     } else if (partido.penalesVisitante > partido.penalesLocal) {
+  //       return partido.equipoVisitante || null;
+  //     }
+  //   }
     
-    return null; // Empate (sin penales o empate en penales)
-  };
+  //   return null; // Empate (sin penales o empate en penales)
+  // };
 
-  const getPerdedor = (partido: Partido): Equipo | null => {
-    if (partido.estado !== 'jugado' || 
-        partido.golesLocal === null || partido.golesLocal === undefined || 
-        partido.golesVisitante === null || partido.golesVisitante === undefined) {
-      return null;
-    }
+  // const getPerdedor = (partido: Partido): Equipo | null => {
+  //   if (partido.estado !== 'jugado' || 
+  //       partido.golesLocal === null || partido.golesLocal === undefined || 
+  //       partido.golesVisitante === null || partido.golesVisitante === undefined) {
+  //     return null;
+  //   }
     
-    // Verificar perdedor en tiempo regular
-    if (partido.golesLocal > partido.golesVisitante) {
-      return partido.equipoVisitante || null;
-    } else if (partido.golesVisitante > partido.golesLocal) {
-      return partido.equipoLocal || null;
-    }
+  //   // Verificar perdedor en tiempo regular
+  //   if (partido.golesLocal > partido.golesVisitante) {
+  //     return partido.equipoVisitante || null;
+  //   } else if (partido.golesVisitante > partido.golesLocal) {
+  //     return partido.equipoLocal || null;
+  //   }
     
-    // Si hay empate, verificar penales
-    if (partido.tienePenales && 
-        partido.penalesLocal !== null && partido.penalesLocal !== undefined &&
-        partido.penalesVisitante !== null && partido.penalesVisitante !== undefined) {
-      if (partido.penalesLocal > partido.penalesVisitante) {
-        return partido.equipoVisitante || null;
-      } else if (partido.penalesVisitante > partido.penalesLocal) {
-        return partido.equipoLocal || null;
-      }
-    }
+  //   // Si hay empate, verificar penales
+  //   if (partido.tienePenales && 
+  //       partido.penalesLocal !== null && partido.penalesLocal !== undefined &&
+  //       partido.penalesVisitante !== null && partido.penalesVisitante !== undefined) {
+  //     if (partido.penalesLocal > partido.penalesVisitante) {
+  //       return partido.equipoVisitante || null;
+  //     } else if (partido.penalesVisitante > partido.penalesLocal) {
+  //       return partido.equipoLocal || null;
+  //     }
+  //   }
     
-    return null; // Empate (sin penales o empate en penales)
-  };
+  //   return null; // Empate (sin penales o empate en penales)
+  // };
 
   // Función para calcular el camino del equipo por nombre (hacia adelante y hacia atrás)
   const getCaminoEquipo = (partidoId: number, nombreEquipoEspecifico?: string): number[] => {
@@ -341,9 +341,9 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
     }
   };
 
-  const renderPartido = (partido: Partido, numeroGlobal: number, rondaIndex: number) => {
-    const ganador = getGanador(partido);
-    const perdedor = getPerdedor(partido);
+  const renderPartido = (partido: Partido, numeroGlobal: number) => {
+    // const ganador = getGanador(partido);
+    // const perdedor = getPerdedor(partido);
     const jugado = partido.estado === 'jugado';
     const isEditing = editingPartido === partido.id;
     // Un partido está vacío si tiene ID negativo O si no tiene equipos asignados
@@ -790,7 +790,7 @@ const CuadroEliminacion: React.FC<CuadroEliminacionProps> = ({ partidos, equipos
                       key={partido.id} 
                       className="relative"
                     >
-                      {renderPartido(partido, numeroGlobal - 1, rondaIndex)} {/* Pasar el índice global y ronda */}
+                      {renderPartido(partido, numeroGlobal - 1)} {/* Pasar el índice global */}
                     </div>
                   );
                 })}

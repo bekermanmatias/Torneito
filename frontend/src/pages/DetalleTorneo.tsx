@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, XCircle, AlertCircle, Play, CheckCircle, Edit2, Save, X, Upload, Trash2, Check } from 'lucide-react';
+import { ArrowLeft, Trophy, XCircle, Edit2, Save, X, Upload, Trash2, Check } from 'lucide-react';
 import { torneoService, partidoService, equipoService, uploadService } from '../services/api';
 import type { Torneo, Partido, Equipo } from '../types';
 import CuadroEliminacion from '../components/CuadroEliminacion';
@@ -17,7 +17,7 @@ const DetalleTorneo: React.FC = () => {
   const [partidos, setPartidos] = useState<Partido[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [updatingResult, setUpdatingResult] = useState(false);
+  // const [updatingResult, setUpdatingResult] = useState(false);
   const [editingTorneoName, setEditingTorneoName] = useState(false);
   const [editTorneoName, setEditTorneoName] = useState('');
   const [savingTorneoName, setSavingTorneoName] = useState(false);
@@ -110,23 +110,23 @@ const DetalleTorneo: React.FC = () => {
     return equipos.find(equipo => equipo.id === ganadorId) || null;
   };
 
-  const getEstadoColor = (estado: string | undefined) => {
-    switch (estado) {
-      case 'pendiente': return 'text-yellow-600 bg-yellow-100';
-      case 'en_curso': return 'text-blue-600 bg-blue-100';
-      case 'finalizado': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
+  // const getEstadoColor = (estado: string | undefined) => {
+  //   switch (estado) {
+  //     case 'pendiente': return 'text-yellow-600 bg-yellow-100';
+  //     case 'en_curso': return 'text-blue-600 bg-blue-100';
+  //     case 'finalizado': return 'text-green-600 bg-green-100';
+  //     default: return 'text-gray-600 bg-gray-100';
+  //   }
+  // };
 
-  const getEstadoIcon = (estado: string | undefined) => {
-    switch (estado) {
-      case 'pendiente': return <AlertCircle className="w-4 h-4" />;
-      case 'en_curso': return <Play className="w-4 h-4" />;
-      case 'finalizado': return <CheckCircle className="w-4 h-4" />;
-      default: return <AlertCircle className="w-4 h-4" />;
-    }
-  };
+  // const getEstadoIcon = (estado: string | undefined) => {
+  //   switch (estado) {
+  //     case 'pendiente': return <AlertCircle className="w-4 h-4" />;
+  //     case 'en_curso': return <Play className="w-4 h-4" />;
+  //     case 'finalizado': return <CheckCircle className="w-4 h-4" />;
+  //     default: return <AlertCircle className="w-4 h-4" />;
+  //   }
+  // };
 
   const getTipoColor = (tipo: string) => {
     return tipo === 'eliminacion' ? 'text-red-600 bg-red-100' : 'text-blue-600 bg-blue-100';
@@ -134,7 +134,7 @@ const DetalleTorneo: React.FC = () => {
 
   const handleUpdateResult = async (partidoId: number, golesLocal: number, golesVisitante: number, isEditing: boolean = false, tienePenales?: boolean, penalesLocal?: number, penalesVisitante?: number) => {
     try {
-      setUpdatingResult(true);
+      // setUpdatingResult(true);
       
       // Preparar los datos del resultado
       const resultData: any = { golesLocal, golesVisitante };
@@ -163,7 +163,7 @@ const DetalleTorneo: React.FC = () => {
       console.error('Error al actualizar resultado:', error);
       throw error;
     } finally {
-      setUpdatingResult(false);
+      // setUpdatingResult(false);
     }
   };
 
@@ -246,36 +246,36 @@ const DetalleTorneo: React.FC = () => {
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, equipoId: number) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (!file) return;
 
-    // Validar tipo de archivo
-    if (!file.type.startsWith('image/')) {
-      setError('Por favor selecciona un archivo de imagen válido');
-      return;
-    }
+  //   // Validar tipo de archivo
+  //   if (!file.type.startsWith('image/')) {
+  //     setError('Por favor selecciona un archivo de imagen válido');
+  //     return;
+  //   }
 
-    // Validar tamaño (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('La imagen debe ser menor a 5MB');
-      return;
-    }
+  //   // Validar tamaño (máximo 5MB)
+  //   if (file.size > 5 * 1024 * 1024) {
+  //     setError('La imagen debe ser menor a 5MB');
+  //     return;
+  //   }
 
-    try {
-      setUploadingImage(true);
-      setError('');
+  //   try {
+  //     setUploadingImage(true);
+  //     setError('');
       
-      const imageUrl = await uploadImageToCloudinary(file);
-      setEditEquipoEscudoUrl(imageUrl);
+  //     const imageUrl = await uploadImageToCloudinary(file);
+  //     setEditEquipoEscudoUrl(imageUrl);
       
-      console.log('✅ Imagen subida exitosamente:', imageUrl);
-    } catch (error: any) {
-      setError(error.message || 'Error al subir la imagen');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
+  //     console.log('✅ Imagen subida exitosamente:', imageUrl);
+  //   } catch (error: any) {
+  //     setError(error.message || 'Error al subir la imagen');
+  //   } finally {
+  //     setUploadingImage(false);
+  //   }
+  // };
 
   const handleEquipoImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

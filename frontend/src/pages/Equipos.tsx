@@ -8,10 +8,8 @@ import {
   X,
   Check,
   AlertCircle,
-  Trophy,
   Calendar,
-  Upload,
-  Image
+  Upload
 } from 'lucide-react';
 import { equipoService, uploadService } from '../services/api';
 import ConfirmModal from '../components/ConfirmModal';

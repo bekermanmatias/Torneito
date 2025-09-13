@@ -115,7 +115,7 @@ const SoccerBallDebug: React.FC = () => {
 
         // Animación
         let time = 0;
-        const animate = (currentTime: number) => {
+        const animate = () => {
           requestAnimationFrame(animate);
           
           time += 0.016;
@@ -126,7 +126,7 @@ const SoccerBallDebug: React.FC = () => {
           renderer.render(scene, camera);
         };
         
-        animate(0);
+        animate();
       },
       (progress: { loaded: number; total: number }) => {
         const percent = (progress.loaded / progress.total * 100);

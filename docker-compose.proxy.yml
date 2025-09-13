@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: bekermanmatias/torneito-postgres:latest
+    container_name: torneito_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: torneito_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - torneito_network
+
+  # Backend API
+  backend:
+    image: bekermanmatias/torneito-backend:latest
+    container_name: torneito_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: torneito_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:-tu_jwt_secret_super_seguro_aqui}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://20.206.248.90}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    # NO exponer puerto externamente, solo para el proxy
+    expose:
+      - "3001"
+    depends_on:
+      - postgres
+    networks:
+      - torneito_network
+
+  # Frontend
+  frontend:
+    image: bekermanmatias/torneito-frontend:latest
+    container_name: torneito_frontend
+    restart: unless-stopped
+    # NO exponer puerto externamente, solo para el proxy
+    expose:
+      - "80"
+    depends_on:
+      - backend
+    networks:
+      - torneito_network
+
+  # Nginx Proxy Inverso
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    container_name: torneito_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - torneito_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  torneito_network:
+    driver: bridge

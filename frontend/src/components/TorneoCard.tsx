@@ -38,16 +38,16 @@ const TorneoCard: React.FC<TorneoCardProps> = ({
     }
   };
 
-  const getTorneoIcon = (tipo: string) => {
-    switch (tipo) {
-      case 'eliminacion':
-        return <Trophy className="w-6 h-6 text-red-600" />;
-      case 'liga':
-        return <Crown className="w-6 h-6 text-blue-600" />;
-      default:
-        return <Trophy className="w-6 h-6 text-purple-600" />;
-    }
-  };
+  // const getTorneoIcon = (tipo: string) => {
+  //   switch (tipo) {
+  //     case 'eliminacion':
+  //       return <Trophy className="w-6 h-6 text-red-600" />;
+  //     case 'liga':
+  //       return <Crown className="w-6 h-6 text-blue-600" />;
+  //     default:
+  //       return <Trophy className="w-6 h-6 text-purple-600" />;
+  //   }
+  // };
 
   const getTorneoIconLarge = (tipo: string) => {
     switch (tipo) {

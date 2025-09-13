@@ -8,7 +8,7 @@ interface CalendarioLigaProps {
   onUpdateResult?: (partidoId: number, golesLocal: number, golesVisitante: number, isEditing?: boolean) => Promise<void>;
 }
 
-const CalendarioLiga: React.FC<CalendarioLigaProps> = ({ partidos, equipos, onUpdateResult }) => {
+const CalendarioLiga: React.FC<CalendarioLigaProps> = ({ partidos, onUpdateResult }) => {
   const [editingPartido, setEditingPartido] = useState<number | null>(null);
   const [editGolesLocal, setEditGolesLocal] = useState<number>(0);
   const [editGolesVisitante, setEditGolesVisitante] = useState<number>(0);
